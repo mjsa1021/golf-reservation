@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>골프 예약 센터</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-logo">⛳ 명품 골프 예약</div>
+        <div class="nav-menu">
+            <span>구장안내</span>
+            <span>내 예약확인</span>
+            <span>내 정보</span>
+            <span onclick="location.reload()" style="color:#ffeb3b">로그아웃</span>
+        </div>
+    </header>
+
+    <main class="center-content">
+        <div id="auth-section">
+            <h1>환영합니다</h1>
+            <div class="auth-card">
+                <div class="input-group">
+                    <label>아이디 (ID)</label>
+                    <input type="text" id="signup-id" placeholder="사용하실 아이디를 적어주세요">
+                </div>
+                <div class="input-group">
+                    <label>비밀번호 (PW)</label>
+                    <input type="password" id="signup-pw" placeholder="비밀번호를 적어주세요">
+                </div>
+                <button onclick="signup()" class="btn-join">1. 처음 오셨나요? (회원가입)</button>
+                <button onclick="login()" class="btn-login">2. 가입하셨다면? (로그인 하기)</button>
+            </div>
+        </div>
+
+        <div id="reserve-section" style="display: none;">
+            <h1>예약하기</h1>
+            <div class="reserve-card">
+                <div class="input-group">
+                    <label>어느 지역으로 가실까요?</label>
+                    <select id="location">
+                        <option value="">지역을 골라주세요</option>
+                        <option>대구광역시 (Daegu)</option>
+                        <option>경상북도 (경산/안동/포항)</option>
+                        <option>서울특별시/경기도</option>
+                        <option>부산광역시/울산광역시</option>
+                        <option>강원도</option>
+                        <option>충청도</option>
+                        <option>전라도</option>
+                        <option>제주도</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>예약 날짜</label>
+                    <input type="date" id="date">
+                </div>
+                <div class="input-group">
+                    <label>예약 시간</label>
+                    <select id="time">
+                        <option value="">시간 선택</option>
+                        <option>오전 06:00</option>
+                        <option>오전 08:30</option>
+                        <option>오후 13:00</option>
+                        <option>오후 15:30</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>골프장 선택</label>
+                    <select id="court">
+                        <option>대구 CC (회원제)</option>
+                        <option>인터불고 경산 CC</option>
+                        <option>팔공 CC</option>
+                        <option>청도 그레이스 CC</option>
+                    </select>
+                </div>
+                <button onclick="reserve()" class="btn-login">위 내용으로 예약하기</button>
+            </div>
+
+            <div class="summary-card">
+                <h2 style="color:#f57f17">📝 나의 예약 확인서</h2>
+                <div id="result" class="summary-list">
+                    <p>아직 예약된 정보가 없습니다.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

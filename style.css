@@ -1,0 +1,84 @@
+/* 눈이 편안하고 글자가 잘 보이는 폰트 설정 */
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@700;800&display=swap');
+
+body {
+    background-color: #e8ecef; /* 부드러운 회색 배경 */
+    color: #222;
+    font-family: 'Nanum Gothic', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* 상단바: 진한 녹색으로 신뢰감 부여 */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 5%;
+    background-color: #1b5e20; /* 진한 골프장 잔디색 */
+    color: white;
+}
+
+.nav-logo { font-family: 'Jua', sans-serif; font-size: 2rem; }
+.nav-menu span { margin-left: 20px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+
+/* 메인 컨테이너: 모든 요소를 큼직하게 */
+.center-content {
+    max-width: 800px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+h1 { font-family: 'Jua', sans-serif; font-size: 3.5rem; color: #1b5e20; margin-bottom: 30px; }
+
+/* 카드 디자인: 그림자를 깊게 주어 입체감 표현 */
+.auth-card, .reserve-card, .summary-card {
+    background: white;
+    padding: 50px;
+    border-radius: 30px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    margin-bottom: 30px;
+    border: 3px solid #1b5e20; /* 테두리를 강조하여 영역 구분 */
+}
+
+/* 입력창: 배경색을 넣어 어디에 써야 할지 명확히 함 */
+.input-group { margin-bottom: 25px; text-align: left; }
+label { font-size: 1.4rem; font-weight: 800; color: #1b5e20; display: block; margin-bottom: 10px; }
+
+input, select {
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 2px solid #ccc;
+    border-radius: 15px;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+/* 버튼: 누르기 쉽게 아주 크게 제작 */
+button {
+    width: 100%;
+    padding: 20px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    border-radius: 15px;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+}
+
+.btn-login { background-color: #1b5e20; color: white; margin-top: 20px; }
+.btn-join { background-color: #ff9800; color: white; margin-bottom: 15px; } /* 회원가입은 주황색으로 구분 */
+
+/* 예약 내역: 노란 포스트잇 느낌으로 강조 */
+.summary-card {
+    background-color: #fffde7;
+    border-color: #fbc02d;
+}
+
+.summary-list p {
+    font-size: 1.5rem;
+    line-height: 2;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 10px;
+}
