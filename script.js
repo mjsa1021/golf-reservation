@@ -4,7 +4,7 @@ function signup() {
     
     if(!id || !pw) return alert("아이디와 비밀번호를 모두 적어주세요.");
 
-    fetch("http://localhost:3000/signup", {
+    fetch("https://golf-reservation.onrender.com/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, password: pw })
