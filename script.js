@@ -22,8 +22,8 @@ function signup() {
 
 // 로그인
 function login() {
-    const id = document.getElementById("signup-id").value; 
-    const pw = document.getElementById("signup-pw").value;
+    const id = document.getElementById("login-id").value;
+    const pw = document.getElementById("login-pw").value;
 
     if(!id || !pw) return alert("아이디와 비밀번호를 입력해주세요.");
 
