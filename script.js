@@ -7,7 +7,7 @@ function signup() {
     if(!id || !pw) return alert("아이디와 비밀번호를 모두 입력해주세요.");
 
     // 주소를 vercel 주소로 수정했습니다.
-    fetch("golf-reservation-seven.vercel.app/signup", { 
+    fetch("https://golf-reservation-seven.vercel.app/signup", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, password: pw })
@@ -28,7 +28,7 @@ function login() {
     if(!id || !pw) return alert("아이디와 비밀번호를 입력해주세요.");
 
     // 주소를 vercel 주소로 수정했습니다.
-    fetch("golf-reservation-seven.vercel.app/login", {
+    fetch("https://golf-reservation-seven.vercel.app/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, password: pw })
@@ -55,7 +55,7 @@ function reserve() {
 
     if(!loc || !date || !time || !court) return alert("모든 정보를 선택해주세요.");
 
-    fetch("golf-reservation-seven.vercel.app/reserve", { 
+    fetch("https://golf-reservation-seven.vercel.app/reserve", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ loc, date, time, court })
