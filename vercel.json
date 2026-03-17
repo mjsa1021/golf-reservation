@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/signup", "destination": "/server.js" },
+    { "source": "/login", "destination": "/server.js" },
+    { "source": "/reserve", "destination": "/server.js" }
+  ]
+}
