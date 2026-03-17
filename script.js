@@ -22,12 +22,13 @@ function signup() {
 
 // 로그인
 function login() {
-    const id = document.getElementById("login-id").value;
+    // 1. 아래 id 이름들이 HTML의 input 태그 id와 똑같은지 확인하세요!
+    // 보통 로그인 칸은 "login-id", "login-pw"라고 이름을 붙입니다.
+    const id = document.getElementById("login-id").value; 
     const pw = document.getElementById("login-pw").value;
 
     if(!id || !pw) return alert("아이디와 비밀번호를 입력해주세요.");
 
-    // 주소를 vercel 주소로 수정했습니다.
     fetch("https://golf-reservation-seven.vercel.app/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
