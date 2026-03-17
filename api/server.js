@@ -5,7 +5,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Vercel은 파일 저장이 안 되므로 임시 메모리 저장소를 사용합니다.
 let users = [];
 let reservations = [];
 
@@ -18,9 +17,13 @@ app.post('/signup', (req, res) => {
 
 app.post('/login', (req, res) => {
     const { id, password } = req.body;
+    // 여기 u.id 부분을 정확히 확인하세요
     const user = users.find(u => u.id === id && u.password === password);
-    if (user) res.send("로그인 성공!");
-    else res.status(401).send("아이디 또는 비밀번호가 틀렸습니다.");
+    if (user) {
+        res.send("로그인 성공!");
+    } else {
+        res.status(401).send("아이디 또는 비밀번호가 틀렸습니다.");
+    }
 });
 
 app.post('/reserve', (req, res) => {
@@ -32,5 +35,4 @@ app.post('/reserve', (req, res) => {
     res.send("예약 완료!");
 });
 
-// Vercel 배포를 위해 반드시 추가
 module.exports = app;
