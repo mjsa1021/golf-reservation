@@ -50,23 +50,25 @@ function reserve() {
 
     if(!loc || !date || !time || !court) return alert("모든 정보를 선택해주세요.");
 
-    fetch("https://golf-reservation.onrender.com/reserve", {
+    fetch("https://golf-reservation-seven.vercel.app/reserve", { // 본인 주소 확인
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ loc, date, time, court })
     })
     .then(async res => {
-        const msg = await res.text();
+        const message = await res.text();
         if(res.ok) {
-            alert("예약이 확정되었습니다.");
+            alert("예약이 완료되었습니다!");
             document.getElementById("result").innerHTML = `
-                <p><strong>[지역]</strong> ${loc}</p>
-                <p><strong>[날짜]</strong> ${date}</p>
-                <p><strong>[시간]</strong> ${time}</p>
-                <p><strong>[골프장]</strong> ${court}</p>
+                <p style='color:blue; font-weight:bold;'>[예약 완료]</p>
+                <p><strong>구장:</strong> ${court}</p>
+                <p><strong>일시:</strong> ${date} ${time}</p>
             `;
         } else {
-            alert(msg); // "이미 예약된 시간대입니다" 출력
+            // 서버에서 보낸 "이미 예약된 시간대입니다" 메시지를 띄웁니다.
+            alert(message);
         }
-    });
+    })
+    .catch(err => alert("연결 오류가 발생했습니다."));
+}
 }
