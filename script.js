@@ -6,7 +6,7 @@ function signup() {
     const pw = document.getElementById("signup-pw").value;
     if(!id || !pw) return alert("아이디와 비밀번호를 모두 입력해주세요.");
 
-    fetch("https://your-server-url.com/signup", { // 실제 배포된 서버 주소로 변경
+    fetch("https://golf-reservation.onrender.com/signup", { // 실제 배포된 서버 주소로 변경
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, password: pw })
@@ -24,7 +24,7 @@ function login() {
     const id = document.getElementById("signup-id").value; 
     const pw = document.getElementById("signup-pw").value;
 
-    fetch("https://your-server-url.com/login", {
+    fetch("https://golf-reservation.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, password: pw })
@@ -50,7 +50,7 @@ function reserve() {
 
     if(!loc || !date || !time || !court) return alert("모든 정보를 선택해주세요.");
 
-    fetch("https://your-server-url.com/reserve", {
+    fetch("https://golf-reservation.onrender.com/reserve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ loc, date, time, court })
