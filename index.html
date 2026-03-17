@@ -7,14 +7,14 @@
 </head>
 <body>
     <header class="top-nav">
-        <div class="nav-logo">⛳ 명품 골프 예약</div>
-        <div class="nav-menu">
-            <span>구장안내</span>
-            <span>내 예약확인</span>
-            <span>내 정보</span>
-            <span onclick="location.reload()" style="color:#ffeb3b">로그아웃</span>
-        </div>
-    </header>
+    <div class="nav-logo" onclick="goHome()" style="cursor:pointer;">⛳ 명품 골프 예약</div>
+    <div class="nav-menu">
+        <span onclick="showGuide()" style="cursor:pointer;">구장안내</span>
+        <span onclick="checkMyReserve()" style="cursor:pointer;">내 예약확인</span>
+        <span onclick="showMyInfo()" style="cursor:pointer;">내 정보</span>
+        <span onclick="location.reload()" style="color:#ffeb3b; cursor:pointer;">로그아웃</span>
+    </div>
+</header>
 
     <main class="center-content">
         <div id="auth-section">
