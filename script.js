@@ -74,3 +74,37 @@ function reserve() {
     })
     .catch(err => alert("연결 오류가 발생했습니다."));
 }
+
+// 1. 로고 클릭 시 처음 화면으로 (페이지 새로고침)
+function goHome() {
+    location.reload();
+}
+
+// 2. 구장 안내 (알림창으로 간단히 표시)
+function showGuide() {
+    alert("현재 예약 가능한 구장:\n1. 대구 CC (회원제)\n2. 인터불고 경산 CC\n3. 팔공 CC\n4. 청도 그레이스 CC");
+}
+
+// 3. 내 예약 확인 (예약 결과창으로 화면 이동)
+function checkMyReserve() {
+    const resultSection = document.getElementById("result");
+    if (resultSection.innerText.includes("아직 예약된 정보가 없습니다")) {
+        alert("아직 예약하신 내역이 없습니다.");
+    } else {
+        resultSection.scrollIntoView({ behavior: 'smooth' }); // 예약 내역이 있는 곳으로 부드럽게 이동
+        alert("아래 '나의 예약 확인서'에서 상세 내용을 확인하세요!");
+    }
+}
+
+// 4. 내 정보 확인 (현재 로그인된 ID 표시)
+function showMyInfo() {
+    // 로그인할 때 사용했던 id 값을 가져옵니다.
+    const id = document.getElementById("signup-id").value;
+    const pw = document.getElementById("signup-pw").value;
+    
+    if(!id) {
+        alert("로그인 정보가 없습니다.");
+    } else {
+        alert(" [내 정보]\n아이디: " + id + "\n비밀번호: " + "*".repeat(pw.length) + " (보안상 별표 처리)");
+    }
+}
