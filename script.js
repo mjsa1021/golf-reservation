@@ -34,6 +34,10 @@ function login() {
         const msg = await res.text();
         if(res.ok) {
             alert(id + "님, 환영합니다!");
+            
+            // [추가] 로그인 성공 시 아이디를 브라우저에 임시 저장 (기록용)
+            localStorage.setItem("userId", id); 
+
             // 로그인 성공 시 화면 전환
             document.getElementById("auth-section").style.display = "none";
             document.getElementById("reserve-section").style.display = "block";
@@ -50,18 +54,23 @@ function reserve() {
     const date = document.getElementById("date").value;
     const time = document.getElementById("time").value;
     const court = document.getElementById("court").value;
+    
+    // 추가부분 로그인할 때 저장했던 아이디 가져오기
+    const userId = localStorage.getItem("userId") || "unknown";
 
     if(!loc || !date || !time || !court) return alert("모든 정보를 선택해주세요.");
 
     fetch("https://golf-reservation-seven.vercel.app/reserve", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loc, date, time, court })
+
+        // 수정부분 누가 예약했는지(userId) 정보를 포함하여 서버로 보냄
+        body: JSON.stringify({ userId, loc, date, time, court }) 
     })
     .then(async res => {
         const message = await res.text();
         if(res.ok) {
-            alert("예약이 완료되었습니다!");
+            alert("예약 완료");
             document.getElementById("result").innerHTML = `
                 <p style='color:blue; font-weight:bold;'>[예약 완료 확인서]</p>
                 <p><strong>지역:</strong> ${loc}</p>
@@ -92,19 +101,6 @@ function checkMyReserve() {
         alert("아직 예약하신 내역이 없습니다.");
     } else {
         resultSection.scrollIntoView({ behavior: 'smooth' }); // 예약 내역이 있는 곳으로 부드럽게 이동
-        alert("아래 '나의 예약 확인서'에서 상세 내용을 확인하세요!");
-    }
-}
-
-// 4. 내 정보 확인 (현재 로그인된 ID 표시)
-function showMyInfo() {
-    // 로그인할 때 사용했던 id 값을 가져옵니다.
-    const id = document.getElementById("signup-id").value;
-    const pw = document.getElementById("signup-pw").value;
-    
-    if(!id) {
-        alert("로그인 정보가 없습니다.");
-    } else {
-        alert(" [내 정보]\n아이디: " + id + "\n비밀번호: " + "*".repeat(pw.length) + " (보안상 별표 처리)");
+        alert("아래 '나의 예약 확인서'에서 상세 내용을 확인하세요");
     }
 }
