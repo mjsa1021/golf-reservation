@@ -6,38 +6,29 @@
     <title>경산 실버 골프 예약 센터</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 어르신들을 위한 큰 UI 스타일 */
         .calendar-container { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.8rem; font-weight: bold; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
         .day-label { font-weight: bold; padding: 10px; color: #666; font-size: 1.2rem; text-align: center; }
-        .day { 
-            padding: 25px 10px; border-radius: 10px; cursor: pointer; font-size: 1.6rem; font-weight: bold; 
-            border: 2px solid #eee; text-align: center; transition: 0.2s;
-        }
+        .day { padding: 25px 10px; border-radius: 10px; cursor: pointer; font-size: 1.6rem; font-weight: bold; border: 2px solid #eee; text-align: center; }
         .day:hover:not(.disabled) { background-color: #e8f5e9; border-color: #2e7d32; }
         .day.selected { background-color: #2e7d32; color: white; border-color: #1b5e20; }
-        .day.disabled { color: #ccc !important; background-color: #f9f9f9; cursor: not-allowed; border: 1px solid #eee; }
+        .day.disabled { color: #ccc !important; background-color: #f9f9f9; cursor: not-allowed; }
         .day.today { border-color: #f57f17; color: #f57f17; }
-        
         .time-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .time-btn { 
-            padding: 25px; font-size: 1.4rem; border: 3px solid #ddd; border-radius: 12px; 
-            background: white; cursor: pointer; font-weight: bold;
-        }
+        .time-btn { padding: 25px; font-size: 1.4rem; border: 3px solid #ddd; border-radius: 12px; background: white; cursor: pointer; font-weight: bold; }
         .time-btn.active { background-color: #2e7d32; color: white; border-color: #1b5e20; }
-        
         .big-label { font-size: 1.5rem; font-weight: bold; color: #333; display: block; margin: 20px 0 10px; }
-        input, select { font-size: 1.3rem !important; padding: 15px !important; }
+        input, select { font-size: 1.3rem !important; padding: 15px !important; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <header class="top-nav">
         <div class="nav-logo" onclick="goHome()" style="cursor:pointer;">⛳ 경산 통합 예약 센터</div>
         <div class="nav-menu">
-            <span onclick="checkMyReserve()" style="cursor:pointer;">예약확인</span>
-            <span onclick="showMyInfo()" style="cursor:pointer;">내 정보</span>
-            <span onclick="location.reload()" style="color:#ffeb3b; cursor:pointer;">로그아웃</span>
+            <span onclick="checkMyReserve()">예약확인</span>
+            <span onclick="showMyInfo()">내 정보</span>
+            <span onclick="location.reload()" style="color:#ffeb3b;">로그아웃</span>
         </div>
     </header>
 
@@ -53,47 +44,41 @@
                     <label class="big-label">비밀번호</label>
                     <input type="password" id="user-pw" placeholder="비밀번호 입력">
                 </div>
-
                 <div id="signup-extra" style="display: none;">
                     <div class="input-group"><label class="big-label">비밀번호 확인</label><input type="password" id="user-pw-confirm"></div>
                     <div class="input-group"><label class="big-label">성함</label><input type="text" id="user-name"></div>
                     <div class="input-group"><label class="big-label">생년월일 (8자리)</label><input type="text" id="user-birth" placeholder="예: 19550101"></div>
                 </div>
-
                 <div class="button-group" style="margin-top: 30px;">
-                    <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-join" style="padding: 20px; font-size: 1.3rem;">처음 오셨나요? (회원가입)</button>
-                    <button onclick="login()" id="btn-login-main" class="btn-login" style="padding: 20px; font-size: 1.3rem; margin-top: 10px;">로그인 하기</button>
+                    <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-join">처음 오셨나요? (회원가입)</button>
+                    <button onclick="login()" id="btn-login-main" class="btn-login" style="margin-top: 10px;">로그인 하기</button>
                 </div>
+                <p onclick="showFindModal()" style="color: #666; cursor: pointer; text-decoration: underline; text-align: center; margin-top: 20px;">아이디/비밀번호 찾기</p>
             </div>
         </div>
 
         <div id="reserve-section" style="display: none;">
             <h1 style="font-size: 2.2rem;">날짜와 시간을 선택하세요</h1>
-            
             <div class="calendar-container">
                 <div class="calendar-header">
-                    <button onclick="changeMonth(-1)" style="font-size: 1.5rem; padding: 10px;">◀ 이전달</button>
-                    <span id="current-month-display">2026년 4월</span>
-                    <button onclick="changeMonth(1)" style="font-size: 1.5rem; padding: 10px;">다음달 ▶</button>
+                    <button onclick="changeMonth(-1)">◀ 이전달</button>
+                    <span id="current-month-display"></span>
+                    <button onclick="changeMonth(1)">다음달 ▶</button>
                 </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
             </div>
-
             <div class="reserve-card">
                 <label class="big-label">경산 지역 구장 선택</label>
                 <select id="court">
                     <option>경산 인터불고 CC</option>
                     <option>경산 대구 CC</option>
                     <option>경산 파크골프장</option>
-                    <option>경산 시민골프장</option>
                 </select>
-
                 <label class="big-label">운영 시간 선택</label>
                 <div class="time-btn-group">
-                    <button class="time-btn" onclick="selectTime('오전 09:00 ~ 12:00', this)">오전<br>09:00 ~ 12:00</button>
-                    <button class="time-btn" onclick="selectTime('오후 13:00 ~ 17:00', this)">오후<br>13:00 ~ 17:00</button>
+                    <button class="time-btn" onclick="selectTime('오전 09:00 ~ 12:00', this)">오전반</button>
+                    <button class="time-btn" onclick="selectTime('오후 13:00 ~ 17:00', this)">오후반</button>
                 </div>
-
                 <label class="big-label">인원 선택</label>
                 <select id="people-count">
                     <option value="1">1명</option>
@@ -101,19 +86,21 @@
                     <option value="3">3명</option>
                     <option value="4">4명 (동반)</option>
                 </select>
-
-                <button onclick="reserve()" class="btn-login" style="margin-top: 40px; padding: 25px; font-size: 1.6rem; background: #2e7d32;">예약 신청하기</button>
+                <button onclick="reserve()" class="btn-login" style="margin-top: 40px; background: #2e7d32;">예약 신청하기</button>
             </div>
-
-            <div class="summary-card">
-                <h2 style="color:#f57f17; font-size: 1.8rem;">📝 나의 예약 내역</h2>
-                <div id="result" class="summary-list" style="font-size: 1.4rem;">
-                    <p>아직 예약된 정보가 없습니다.</p>
-                </div>
+            <div id="result" class="summary-card" style="font-size: 1.4rem; padding: 20px; border: 2px solid #ddd; border-radius: 10px; margin-top: 20px;">
+                <p>아직 예약된 정보가 없습니다.</p>
             </div>
         </div>
-    </main>
 
+        <div id="find-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border:2px solid #2e7d32; border-radius:15px; z-index:1000; box-shadow: 0 0 20px rgba(0,0,0,0.3); width: 80%;">
+            <h3>내 정보 찾기</h3>
+            <input type="text" id="find-name" placeholder="성함 입력" style="margin-bottom:10px;">
+            <input type="text" id="find-birth" placeholder="생년월일 8자리" style="margin-bottom:10px;">
+            <button onclick="findAccount()" class="btn-login">찾기 확인</button>
+            <button onclick="closeFindModal()" style="margin-top:10px; width:100%;">닫기</button>
+        </div>
+    </main>
     <script src="script.js"></script>
 </body>
 </html>
