@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산 실버 골프 예약 센터</title>
+    <title>경산시 골프 예약 센터</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 1. 달력 헤더 정렬 수정 (년도와 월이 나란히 오도록) */
+       
         .calendar-header { 
             display: flex; 
-            justify-content: center; /* 가운데 정렬 */
+            justify-content: center; 
             align-items: center; 
-            gap: 30px; /* 버튼과 글자 사이 간격 */
+            gap: 30px; 
             margin-bottom: 20px; 
             font-size: 1.8rem; 
             font-weight: bold; 
         }
         #current-month-display {
             display: inline-block;
-            white-space: nowrap; /* 글자가 아래로 떨어지지 않게 방지 */
+            white-space: nowrap; 
             text-align: center;
             min-width: 160px;
         }
@@ -31,7 +31,7 @@
             background: #f9f9f9;
         }
 
-        /* 기본 레이아웃 및 달력 그리드 */
+    
         .calendar-container { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
         .day-label { font-weight: bold; padding: 10px; color: #666; font-size: 1.2rem; text-align: center; }
@@ -41,7 +41,7 @@
         .day.disabled { color: #ccc !important; background-color: #f9f9f9; cursor: not-allowed; }
         .day.today { border-color: #f57f17; color: #f57f17; border-width: 2px; }
 
-        /* 2. 시간 버튼 디자인 수정 (상세 시간 표시 포함) */
+     
         .time-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .time-btn { 
             padding: 15px 10px; 
@@ -52,7 +52,7 @@
             cursor: pointer; 
             font-weight: bold; 
             display: flex;
-            flex-direction: column; /* 글자를 위아래로 배치 */
+            flex-direction: column; 
             align-items: center;
             gap: 5px;
         }
@@ -71,7 +71,7 @@
 </head>
 <body>
     <header class="top-nav">
-        <div class="nav-logo" onclick="goHome()" style="cursor:pointer;">⛳ 경산 실버 예약 센터</div>
+        <div class="nav-logo" onclick="goHome()" style="cursor:pointer;">⛳ 경산시 골프 예약 센터</div>
         <div class="nav-menu">
             <span onclick="checkMyReserve()">예약확인</span>
             <span onclick="showMyInfo()">내 정보</span>
@@ -139,7 +139,7 @@
                     <option value="1">1명</option>
                     <option value="2">2명</option>
                     <option value="3">3명</option>
-                    <option value="4">4명 (동반)</option>
+                    <option value="4">4명</option>
                 </select>
                 <button onclick="reserve()" class="btn-login" style="margin-top: 40px; background: #2e7d32;">예약 신청하기</button>
             </div>
