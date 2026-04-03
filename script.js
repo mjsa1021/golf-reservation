@@ -2,7 +2,6 @@ let selectedDate = "";
 let selectedTime = "";
 let currentMonth = new Date();
 
-// 공통 서버 주소
 const BASE_URL = "https://golf-reservation-seven.vercel.app";
 
 function renderCalendar() {
@@ -13,10 +12,8 @@ function renderCalendar() {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     
-    // 1. 달력 헤더: 년도와 월이 나란히 보이도록 텍스트 설정
     display.innerText = `${year}년 ${month + 1}월`;
 
-    // 요일 행 생성
     ['일','월','화','수','목','금','토'].forEach(d => {
         const div = document.createElement("div"); 
         div.className = "day-label"; 
@@ -29,17 +26,16 @@ function renderCalendar() {
     const today = new Date(); 
     today.setHours(0,0,0,0);
 
-    // 시작일 앞의 빈칸 생성
     for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement("div"));
 
-    // 날짜 칸 생성
+
     for (let i = 1; i <= lastDate; i++) {
         const dateObj = new Date(year, month, i);
         const cell = document.createElement("div"); 
         cell.className = "day"; 
         cell.innerText = i;
 
-        // 오늘 이전 날짜는 선택 불가(회색 처리)
+
         if (dateObj < today) {
             cell.classList.add("disabled");
         } else {
@@ -47,7 +43,7 @@ function renderCalendar() {
             cell.onclick = () => {
                 document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
                 cell.classList.add("selected");
-                // 선택된 날짜 저장 (YYYY-MM-DD 형식)
+               
                 selectedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
             };
         }
@@ -55,20 +51,20 @@ function renderCalendar() {
     }
 }
 
-// 월 변경 함수
+
 function changeMonth(diff) { 
     currentMonth.setMonth(currentMonth.getMonth() + diff); 
     renderCalendar(); 
 }
 
-// 시간 선택 함수
+
 function selectTime(time, btn) { 
     selectedTime = time; 
     document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("active")); 
     btn.classList.add("active"); 
 }
 
-// 로그인 함수
+
 function login() {
     const id = document.getElementById("user-id").value;
     const pw = document.getElementById("user-pw").value;
@@ -86,12 +82,12 @@ function login() {
             document.getElementById("reserve-section").style.display = "block";
             renderCalendar();
         } else {
-            alert("로그인 실패: 번호나 비밀번호를 다시 확인하세요.");
+            alert("로그인 실패: 아이디나 비밀번호를 다시 확인하세요.");
         }
     }).catch(err => alert("서버 연결에 실패했습니다."));
 }
 
-// 예약 신청 함수
+
 function reserve() {
     const court = document.getElementById("court").value;
     const people = document.getElementById("people-count").value;
@@ -122,7 +118,7 @@ function reserve() {
     });
 }
 
-// 회원가입 전환 함수
+
 function toggleSignup() {
     document.getElementById("signup-extra").style.display = "block";
     const btn = document.getElementById("btn-signup-toggle");
@@ -131,7 +127,7 @@ function toggleSignup() {
     btn.onclick = signup;
 }
 
-// 회원가입 신청 함수
+
 function signup() {
     const id = document.getElementById("user-id").value;
     const pw = document.getElementById("user-pw").value;
@@ -147,11 +143,11 @@ function signup() {
     }).then(async res => {
         const msg = await res.text();
         alert(msg);
-        if (res.ok) location.reload(); // 가입 성공 시 초기화면으로
+        if (res.ok) location.reload(); 
     });
 }
 
-// 아이디/비밀번호 찾기 함수
+
 function findAccount() {
     const name = document.getElementById("find-name").value;
     const birth = document.getElementById("find-birth").value;
@@ -168,7 +164,6 @@ function findAccount() {
     });
 }
 
-// 기타 UI 제어 함수들
 function showFindModal() { document.getElementById("find-modal").style.display = "block"; }
 function closeFindModal() { document.getElementById("find-modal").style.display = "none"; }
 function goHome() { location.reload(); }
