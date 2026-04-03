@@ -6,32 +6,10 @@
     <title>경산시 골프 예약 센터</title>
     <link rel="stylesheet" href="style.css">
     <style>
-       
-        .calendar-header { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 30px; 
-            margin-bottom: 20px; 
-            font-size: 1.8rem; 
-            font-weight: bold; 
-        }
-        #current-month-display {
-            display: inline-block;
-            white-space: nowrap; 
-            text-align: center;
-            min-width: 160px;
-        }
-        .calendar-header button {
-            padding: 5px 15px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background: #f9f9f9;
-        }
 
-    
+        .calendar-header { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 20px; font-size: 1.8rem; font-weight: bold; }
+        #current-month-display { display: inline-block; white-space: nowrap; text-align: center; min-width: 160px; }
+        .calendar-header button { padding: 5px 15px; font-size: 1.2rem; cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #f9f9f9; }
         .calendar-container { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
         .day-label { font-weight: bold; padding: 10px; color: #666; font-size: 1.2rem; text-align: center; }
@@ -40,33 +18,18 @@
         .day.selected { background-color: #2e7d32; color: white; border-color: #1b5e20; }
         .day.disabled { color: #ccc !important; background-color: #f9f9f9; cursor: not-allowed; }
         .day.today { border-color: #f57f17; color: #f57f17; border-width: 2px; }
-
-     
         .time-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .time-btn { 
-            padding: 15px 10px; 
-            font-size: 1.4rem; 
-            border: 3px solid #ddd; 
-            border-radius: 12px; 
-            background: white; 
-            cursor: pointer; 
-            font-weight: bold; 
-            display: flex;
-            flex-direction: column; 
-            align-items: center;
-            gap: 5px;
-        }
-        .time-btn .time-detail { 
-            font-size: 1rem; 
-            font-weight: normal; 
-            color: #666; 
-        }
+        .time-btn { padding: 15px 10px; font-size: 1.4rem; border: 3px solid #ddd; border-radius: 12px; background: white; cursor: pointer; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .time-btn .time-detail { font-size: 1rem; font-weight: normal; color: #666; }
         .time-btn.active { background-color: #2e7d32; color: white; border-color: #1b5e20; }
         .time-btn.active .time-detail { color: #e8f5e9; }
-
         .big-label { font-size: 1.5rem; font-weight: bold; color: #333; display: block; margin: 20px 0 10px; }
         input, select { font-size: 1.3rem !important; padding: 15px !important; width: 100%; box-sizing: border-box; }
         .auth-card, .reserve-card { max-width: 500px; margin: 0 auto; }
+        
+        /* 추가 부분 단계별 페이지 */
+        .reserve-step { margin-bottom: 30px; }
+        .step-indicator { text-align: center; margin-bottom: 20px; font-weight: bold; color: #2e7d32; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -105,46 +68,71 @@
         </div>
 
         <div id="reserve-section" style="display: none;">
-            <h1 style="font-size: 2.2rem; text-align: center;">날짜와 시간을 선택하세요</h1>
             
-            <div class="calendar-container">
-                <div class="calendar-header">
-                    <button onclick="changeMonth(-1)">◀ 이전달</button>
-                    <span id="current-month-display"></span>
-                    <button onclick="changeMonth(1)">다음달 ▶</button>
+            <div id="step-1" class="reserve-step">
+                <div class="step-indicator">1단계 / 3단계</div>
+                <h1 style="font-size: 2.2rem; text-align: center;">날짜를 선택하세요</h1>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button onclick="changeMonth(-1)">◀ 이전달</button>
+                        <span id="current-month-display"></span>
+                        <button onclick="changeMonth(1)">다음달 ▶</button>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid"></div>
                 </div>
-                <div class="calendar-grid" id="calendar-grid"></div>
+                <button onclick="goToStep(2)" class="btn-login" style="background: #2e7d32; margin-top: 20px;">다음 단계 (장소/시간 선택) ▶</button>
             </div>
 
-            <div class="reserve-card">
-                <label class="big-label">구장 선택</label>
-                <select id="court">
-                    <option value="경산 파크골프장">경산 파크골프장</option>
-                </select>
+            <div id="step-2" class="reserve-step" style="display: none;">
+                <div class="step-indicator">2단계 / 3단계</div>
+                <h1 style="font-size: 2.2rem; text-align: center;">장소와 시간을 선택하세요</h1>
+                <div class="reserve-card">
+                    <label class="big-label">구장 선택</label>
+                    <select id="court">
+                        <option value="경산 파크골프장">경산 파크골프장</option>
+                    </select>
 
-                <label class="big-label">운영 시간 선택</label>
-                <div class="time-btn-group">
-                    <button class="time-btn" onclick="selectTime('오전반(09:00~12:00)', this)">
-                        <span>오전반</span>
-                        <span class="time-detail">(09:00 ~ 12:00)</span>
-                    </button>
-                    <button class="time-btn" onclick="selectTime('오후반(13:00~17:00)', this)">
-                        <span>오후반</span>
-                        <span class="time-detail">(13:00 ~ 17:00)</span>
-                    </button>
+                    <label class="big-label">운영 시간 선택</label>
+                    <div class="time-btn-group">
+                        <button class="time-btn" onclick="selectTime('오전반(09:00~12:00)', this)">
+                            <span>오전반</span>
+                            <span class="time-detail">(09:00 ~ 12:00)</span>
+                        </button>
+                        <button class="time-btn" onclick="selectTime('오후반(13:00~17:00)', this)">
+                            <span>오후반</span>
+                            <span class="time-detail">(13:00 ~ 17:00)</span>
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                        <button onclick="goToStep(1)" style="flex: 1; background: #999;" class="btn-login">◀ 이전</button>
+                        <button onclick="goToStep(3)" style="flex: 2; background: #2e7d32;" class="btn-login">다음 단계 (인원 확인) ▶</button>
+                    </div>
                 </div>
-
-                <label class="big-label">인원 선택</label>
-                <select id="people-count">
-                    <option value="1">1명</option>
-                    <option value="2">2명</option>
-                    <option value="3">3명</option>
-                    <option value="4">4명</option>
-                </select>
-                <button onclick="reserve()" class="btn-login" style="margin-top: 40px; background: #2e7d32;">예약 신청하기</button>
             </div>
 
-            <div id="result" class="summary-card" style="font-size: 1.4rem; padding: 20px; border: 2px solid #ddd; border-radius: 10px; margin-top: 20px; text-align: center; background-color: #f9f9f9;">
+            <div id="step-3" class="reserve-step" style="display: none;">
+                <div class="step-indicator">3단계 / 3단계</div>
+                <h1 style="font-size: 2.2rem; text-align: center;">마지막으로 정보를 확인하세요</h1>
+                <div class="reserve-card">
+                    <label class="big-label">총 몇 분이서 오시나요?</label>
+                    <select id="people-count">
+                        <option value="1">1명</option>
+                        <option value="2">2명</option>
+                        <option value="3">3명</option>
+                        <option value="4">4명</option>
+                    </select>
+                    
+                    <div id="final-check" style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 10px; font-size: 1.2rem; line-height: 1.6;">
+                        </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                        <button onclick="goToStep(2)" style="flex: 1; background: #999;" class="btn-login">◀ 이전</button>
+                        <button onclick="reserve()" style="flex: 2; background: #e91e63;" class="btn-login">최종 예약 신청하기 ✔️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="result" style="display: none; font-size: 1.4rem; padding: 20px; border: 2px solid #ddd; border-radius: 10px; margin-top: 20px; text-align: center; background-color: #f9f9f9;">
                 <p>아직 예약된 정보가 없습니다.</p>
             </div>
         </div>
