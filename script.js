@@ -1,92 +1,38 @@
-function toggleSignup() {
-    const extra = document.getElementById("signup-extra");
-    const btnSignup = document.getElementById("btn-signup-toggle");
-    const btnLogin = document.getElementById("btn-login-main");
-    if (extra.style.display === "none") {
-        extra.style.display = "block";
-        btnSignup.innerText = "위 내용으로 가입 완료하기";
-        btnLogin.style.display = "none";
-        btnSignup.onclick = signup; 
-    }
-}
+const express = require('express');
+const cors = require('cors');
+const app = express();
 
-function signup() {
-    const id = document.getElementById("user-id").value;
-    const pw = document.getElementById("user-pw").value;
-    const pwConfirm = document.getElementById("user-pw-confirm").value;
-    const name = document.getElementById("user-name").value;
-    const birth = document.getElementById("user-birth").value;
+app.use(cors());
+app.use(express.json());
 
-    if (!id || !pw || !name || !birth) return alert("항목을 모두 입력하세요.");
-    if (pw !== pwConfirm) return alert("비밀번호 불일치.");
+let users = [];
+let reservations = [];
 
-    fetch("https://golf-reservation-seven.vercel.app/signup", { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, password: pw, name, birth })
-    }).then(async res => {
-        alert(await res.text());
-        if (res.ok) location.reload();
-    });
-}
+// 회원가입
+app.post('/signup', (req, res) => {
+    const { id, password, name, birth } = req.body;
+    if (users.find(u => u.id === id)) return res.status(400).send("이미 등록된 번호입니다.");
+    users.push({ id, password, name, birth });
+    res.send("회원가입이 완료되었습니다!");
+});
 
-function login() {
-    const id = document.getElementById("user-id").value; 
-    const pw = document.getElementById("user-pw").value;
-    fetch("https://golf-reservation-seven.vercel.app/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, password: pw })
-    }).then(async res => {
-        if (res.ok) {
-            localStorage.setItem("userId", id);
-            localStorage.setItem("userPw", pw);
-            document.getElementById("auth-section").style.display = "none";
-            document.getElementById("reserve-section").style.display = "block";
-        } else alert(await res.text());
-    });
-}
+// 로그인
+app.post('/login', (req, res) => {
+    const { id, password } = req.body;
+    const user = users.find(u => u.id === id && u.password === password);
+    if (user) res.send("로그인 성공!");
+    else res.status(401).send("번호나 비밀번호를 확인해주세요.");
+});
 
-function findAccount() {
-    const name = document.getElementById("find-name").value;
-    const birth = document.getElementById("find-birth").value;
-    fetch("https://golf-reservation-seven.vercel.app/find-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, birth })
-    }).then(async res => alert(await res.text()));
-}
+// 예약 (경산 통합 시스템)
+app.post('/reserve', (req, res) => {
+    const { userId, date, time, court, people } = req.body;
+    // 중복 확인 (같은 날, 같은 장소, 같은 시간)
+    const isBooked = reservations.find(r => r.date === date && r.time === time && r.court === court);
+    if (isBooked) return res.status(400).send("이미 예약이 꽉 찬 시간대입니다.");
+    
+    reservations.push({ userId, date, time, court, people });
+    res.send("정상적으로 예약되었습니다.");
+});
 
-function reserve() {
-    const loc = document.getElementById("location").value;
-    const date = document.getElementById("date").value;
-    const time = document.getElementById("time").value;
-    const court = document.getElementById("court").value;
-    const people = document.getElementById("people-count").value; // 인원수 추가
-    const userId = localStorage.getItem("userId") || "unknown";
-
-    if (!loc || !date || !time || !court) return alert("모든 항목을 선택하세요.");
-
-    fetch("https://golf-reservation-seven.vercel.app/reserve", { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, loc, date, time, court, people }) 
-    }).then(async res => {
-        if (res.ok) {
-            alert("예약 완료");
-            document.getElementById("result").innerHTML = `
-                <p style='color:blue; font-weight:bold;'>[예약 완료 확인서]</p>
-                <p><strong>지역/구장:</strong> ${loc} ${court}</p>
-                <p><strong>일시:</strong> ${date} ${time}</p>
-                <p><strong>인원:</strong> ${people}명</p>
-            `;
-        } else alert(await res.text());
-    });
-}
-
-function goHome() { location.reload(); }
-function showGuide() { alert("대구, 경산, 팔공, 청도 구장 이용 가능합니다."); }
-function checkMyReserve() { document.getElementById("result").scrollIntoView({ behavior: 'smooth' }); }
-function showMyInfo() { alert(`아이디: ${localStorage.getItem("userId")}\n비번: ${localStorage.getItem("userPw")}`); }
-function showFindModal() { document.getElementById("find-modal").style.display = "block"; }
-function closeFindModal() { document.getElementById("find-modal").style.display = "none"; }
+module.exports = app;
