@@ -2,132 +2,112 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>골프 예약 센터</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경산 실버 골프 예약 센터</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* 달력 및 어르신 맞춤형 추가 스타일 */
+        .calendar-container { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: bold; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; text-align: center; }
+        .day-label { font-weight: bold; padding: 10px; color: #666; font-size: 1.2rem; }
+        .day { 
+            padding: 20px; border-radius: 10px; cursor: pointer; font-size: 1.4rem; font-weight: bold; border: 2px solid #eee; transition: 0.2s;
+        }
+        .day:hover:not(.disabled) { background-color: #e8f5e9; border-color: #2e7d32; }
+        .day.selected { background-color: #2e7d32; color: white; border-color: #1b5e20; }
+        .day.disabled { color: #ccc; background-color: #f9f9f9; cursor: not-allowed; border: none; }
+        .day.today { border-color: #f57f17; color: #f57f17; }
+        
+        .time-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .time-btn { 
+            padding: 20px; font-size: 1.3rem; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-weight: bold;
+        }
+        .time-btn.active { background-color: #2e7d32; color: white; border-color: #2e7d32; }
+        
+        .big-label { font-size: 1.4rem; font-weight: bold; color: #333; display: block; margin-bottom: 10px; }
+    </style>
 </head>
 <body>
     <header class="top-nav">
-        <div class="nav-logo" onclick="goHome()" style="cursor:pointer;">⛳ 명품 골프 예약</div>
+        <div class="nav-logo" onclick="goHome()">⛳ 경산 골프 예약 (통합)</div>
         <div class="nav-menu">
-            <span onclick="showGuide()" style="cursor:pointer;">구장안내</span>
-            <span onclick="checkMyReserve()" style="cursor:pointer;">내 예약확인</span>
-            <span onclick="showMyInfo()" style="cursor:pointer;">내 정보</span>
-            <span onclick="location.reload()" style="color:#ffeb3b; cursor:pointer;">로그아웃</span>
+            <span onclick="checkMyReserve()">예약확인</span>
+            <span onclick="showMyInfo()">내 정보</span>
+            <span onclick="location.reload()" style="color:#ffeb3b;">로그아웃</span>
         </div>
     </header>
 
     <main class="center-content">
         <div id="auth-section">
-            <h1>환영합니다</h1>
+            <h1 style="font-size: 2.5rem;">환영합니다</h1>
             <div class="auth-card">
                 <div class="input-group">
-                    <label>아이디 (전화번호)</label>
-                    <input type="text" id="user-id" placeholder="010-1234-5678">
+                    <label class="big-label">휴대폰 번호</label>
+                    <input type="text" id="user-id" style="font-size: 1.5rem; padding: 15px;" placeholder="010-1234-5678">
                 </div>
                 <div class="input-group">
-                    <label>비밀번호 (PW)</label>
-                    <input type="password" id="user-pw" placeholder="비밀번호를 입력하세요">
+                    <label class="big-label">비밀번호</label>
+                    <input type="password" id="user-pw" style="font-size: 1.5rem; padding: 15px;" placeholder="비밀번호 입력">
                 </div>
 
                 <div id="signup-extra" style="display: none;">
-                    <div class="input-group">
-                        <label>비밀번호 확인</label>
-                        <input type="password" id="user-pw-confirm" placeholder="비밀번호를 한 번 더 입력하세요">
-                    </div>
-                    <div class="input-group">
-                        <label>성함</label>
-                        <input type="text" id="user-name" placeholder="성함을 입력하세요">
-                    </div>
-                    <div class="input-group">
-                        <label>생년월일 (8자리)</label>
-                        <input type="text" id="user-birth" placeholder="예: 19600101">
-                    </div>
+                    <div class="input-group"><label class="big-label">비밀번호 확인</label><input type="password" id="user-pw-confirm"></div>
+                    <div class="input-group"><label class="big-label">성함</label><input type="text" id="user-name"></div>
+                    <div class="input-group"><label class="big-label">생년월일 (8자리)</label><input type="text" id="user-birth" placeholder="예: 19550101"></div>
                 </div>
 
-                <div class="button-group" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-                    <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-join">1. 처음 오셨나요? (회원가입 하기)</button>
-                    <button onclick="login()" id="btn-login-main" class="btn-login">2. 가입하셨다면? (로그인 하기)</button>
+                <div class="button-group" style="margin-top: 20px;">
+                    <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-join" style="font-size: 1.3rem; padding: 20px;">처음 왔습니다 (회원가입)</button>
+                    <button onclick="login()" id="btn-login-main" class="btn-login" style="font-size: 1.3rem; padding: 20px; margin-top:10px;">로그인 하기</button>
                 </div>
-                
-                <hr style="margin: 20px 0; border: 0.5px solid #eee;">
-                <p onclick="showFindModal()" style="color: #666; cursor: pointer; text-decoration: underline; text-align: center; font-size: 0.9em;">
-                    아이디 / 비밀번호를 잊으셨나요?
-                </p>
             </div>
         </div>
 
         <div id="reserve-section" style="display: none;">
-            <h1>예약하기</h1>
-            <div class="reserve-card">
-                <div class="input-group">
-                    <label>어느 지역으로 가실까요?</label>
-                    <select id="location">
-                        <option value="">지역을 골라주세요</option>
-                        <option>대구광역시 (Daegu)</option>
-                        <option>경상북도 (경산/안동/포항)</option>
-                        <option>서울특별시/경기도</option>
-                        <option>부산광역시/울산광역시</option>
-                        <option>강원도</option>
-                        <option>충청도</option>
-                        <option>전라도</option>
-                        <option>제주도</option>
-                    </select>
+            <h1 style="font-size: 2.2rem;">날짜와 시간을 골라주세요</h1>
+            
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)" style="font-size: 1.5rem; padding: 5px 15px;">◀ 이전달</button>
+                    <span id="current-month-display">2026년 4월</span>
+                    <button onclick="changeMonth(1)" style="font-size: 1.5rem; padding: 5px 15px;">다음달 ▶</button>
                 </div>
-                <div class="input-group">
-                    <label>예약 날짜</label>
-                    <input type="date" id="date">
-                </div>
-                <div class="input-group">
-                    <label>예약 시간</label>
-                    <select id="time">
-                        <option value="">시간 선택</option>
-                        <option>오전 06:00</option>
-                        <option>오전 08:30</option>
-                        <option>오후 13:00</option>
-                        <option>오후 15:30</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>골프장 선택</label>
-                    <select id="court">
-                        <option>대구 CC (회원제)</option>
-                        <option>인터불고 경산 CC</option>
-                        <option>팔공 CC</option>
-                        <option>청도 그레이스 CC</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>예약 인원</label>
-                    <select id="people-count">
-                        <option value="1">1명</option>
-                        <option value="2">2명</option>
-                        <option value="3">3명</option>
-                        <option value="4">4명 (풀카트)</option>
-                    </select>
-                </div>
-                <button onclick="reserve()" class="btn-login">위 내용으로 예약하기</button>
+                <div class="calendar-grid" id="calendar-grid">
+                    </div>
             </div>
 
-            <div class="summary-card">
-                <h2 style="color:#f57f17">📝 나의 예약 확인서</h2>
-                <div id="result" class="summary-list">
+            <div class="reserve-card">
+                <label class="big-label">골프장 선택</label>
+                <select id="court" style="font-size: 1.3rem; padding: 15px; margin-bottom: 20px;">
+                    <option>경산 인터불고 CC</option>
+                    <option>경산 대구 CC</option>
+                    <option>경산 파크골프장</option>
+                </select>
+
+                <label class="big-label">시간 선택 (고정제)</label>
+                <div class="time-btn-group">
+                    <button class="time-btn" onclick="selectTime('오전 09:00 ~ 12:00', this)">오전반<br>(09시~12시)</button>
+                    <button class="time-btn" onclick="selectTime('오후 13:00 ~ 17:00', this)">오후반<br>(13시~17시)</button>
+                </div>
+
+                <label class="big-label" style="margin-top: 20px;">인원 선택</label>
+                <select id="people-count" style="font-size: 1.3rem; padding: 15px;">
+                    <option value="1">1명</option>
+                    <option value="2">2명</option>
+                    <option value="3">3명</option>
+                    <option value="4">4명 (동반라운딩)</option>
+                </select>
+
+                <button onclick="reserve()" class="btn-login" style="margin-top: 30px; font-size: 1.5rem; padding: 25px; background: #2e7d32;">예약 신청하기</button>
+            </div>
+
+            <div class="summary-card" id="my-reservation-view">
+                <h2 style="color:#f57f17; font-size: 1.8rem;">📝 나의 예약 내역</h2>
+                <div id="result" class="summary-list" style="font-size: 1.3rem;">
                     <p>아직 예약된 정보가 없습니다.</p>
                 </div>
             </div>
-        </div>
-
-        <div id="find-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border:2px solid #2e7d32; border-radius:15px; z-index:1000; box-shadow: 0 0 20px rgba(0,0,0,0.3); width: 90%; max-width: 400px;">
-            <h3 style="text-align: center; color: #2e7d32;">내 정보 찾기</h3>
-            <div class="input-group">
-                <label>성함</label>
-                <input type="text" id="find-name" placeholder="성함 입력">
-            </div>
-            <div class="input-group">
-                <label>생년월일 (8자리)</label>
-                <input type="text" id="find-birth" placeholder="예: 19600101">
-            </div>
-            <button onclick="findAccount()" class="btn-login" style="margin-top: 10px;">찾기 확인</button>
-            <button onclick="closeFindModal()" style="background:#ccc; border:none; padding:10px; margin-top:10px; width:100%; border-radius:8px; cursor:pointer;">닫기</button>
         </div>
     </main>
 
