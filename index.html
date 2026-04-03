@@ -96,6 +96,15 @@
                         <option>청도 그레이스 CC</option>
                     </select>
                 </div>
+                <div class="input-group">
+                    <label>예약 인원</label>
+                    <select id="people-count">
+                        <option value="1">1명</option>
+                        <option value="2">2명</option>
+                        <option value="3">3명</option>
+                        <option value="4">4명 (풀카트)</option>
+                    </select>
+                </div>
                 <button onclick="reserve()" class="btn-login">위 내용으로 예약하기</button>
             </div>
 
@@ -109,7 +118,6 @@
 
         <div id="find-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border:2px solid #2e7d32; border-radius:15px; z-index:1000; box-shadow: 0 0 20px rgba(0,0,0,0.3); width: 90%; max-width: 400px;">
             <h3 style="text-align: center; color: #2e7d32;">내 정보 찾기</h3>
-            <p style="font-size: 0.85em; color: #666; margin-bottom: 15px; text-align: center;">가입 시 입력한 성함과 생년월일을 입력해주세요.</p>
             <div class="input-group">
                 <label>성함</label>
                 <input type="text" id="find-name" placeholder="성함 입력">
