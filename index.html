@@ -2,225 +2,92 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>경산시 골프 예약 센터</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* [스타일 설정] */
-        body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f4; margin: 0; padding: 0; }
-        .top-nav { background: #2e7d32; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-logo { font-size: 1.5rem; font-weight: bold; cursor: pointer; }
-        .nav-menu span { margin-left: 15px; cursor: pointer; font-size: 0.9rem; }
-        .center-content { padding: 20px; max-width: 600px; margin: 0 auto; }
-        .calendar-header { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 20px; font-size: 1.8rem; font-weight: bold; }
-        #current-month-display { min-width: 160px; text-align: center; }
-        .calendar-header button { padding: 8px 20px; font-size: 1.2rem; cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; }
-        .calendar-container { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-        .day-label { font-weight: bold; padding: 10px; color: #666; font-size: 1.2rem; text-align: center; }
-        .day { padding: 25px 10px; border-radius: 10px; cursor: pointer; font-size: 1.6rem; font-weight: bold; border: 2px solid #eee; text-align: center; }
-        .day:hover:not(.disabled) { background-color: #e8f5e9; border-color: #2e7d32; }
-        .day.selected { background-color: #2e7d32; color: white; border-color: #1b5e20; }
-        .day.disabled { color: #ccc !important; background-color: #f9f9f9; cursor: not-allowed; }
-        .day.today { border-color: #f57f17; color: #f57f17; border-width: 2px; }
-        .time-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .time-btn { padding: 15px 10px; font-size: 1.4rem; border: 3px solid #ddd; border-radius: 12px; background: white; cursor: pointer; font-weight: bold; }
-        .time-btn.active { background-color: #2e7d32; color: white; border-color: #1b5e20; }
-        .big-label { font-size: 1.5rem; font-weight: bold; color: #333; display: block; margin: 20px 0 10px; }
-        input, select { font-size: 1.3rem; padding: 15px; width: 100%; box-sizing: border-box; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 10px; }
-        .btn-login, .btn-join { width: 100%; padding: 18px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-login { background: #2e7d32; color: white; }
-        .btn-join { background: #fff; color: #2e7d32; border: 2px solid #2e7d32; }
-        .info-menu { display: flex; gap: 10px; margin-bottom: 20px; }
-        .info-menu button { flex:1; padding:15px; background:#fff; border:1px solid #2e7d32; border-radius:12px; font-weight:bold; color:#2e7d32; cursor:pointer; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f7f4; }
+        .card { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 12px; margin-top: 10px; box-sizing: border-box; border-radius: 5px; border: 1px solid #ccc; }
+        button { background: #2e7d32; color: white; font-weight: bold; cursor: pointer; border: none; }
+        .secondary-btn { background: white; color: #2e7d32; border: 1px solid #2e7d32; }
     </style>
 </head>
 <body>
-    <header class="top-nav">
-        <div class="nav-logo" onclick="goHome()">⛳ 경산시 골프 예약 센터</div>
-        <div class="nav-menu">
-            <span onclick="showMyInfo()">내 정보</span>
-            <span onclick="location.reload()">로그아웃</span>
-        </div>
-    </header>
 
-    <main class="center-content">
-        <div class="info-menu" id="main-info-menu">
-            <button onclick="alert('준비 중입니다.')">구장안내</button>
-            <button onclick="alert('준비 중입니다.')">공지사항</button>
-        </div>
+<div class="card" id="auth-box">
+    <h2>로그인 / 회원가입</h2>
+    <input type="text" id="uid" placeholder="휴대폰 번호 (아이디)">
+    <input type="password" id="upw" placeholder="비밀번호">
+    
+    <div id="signup-more" style="display:none;">
+        <input type="text" id="uname" placeholder="이름">
+        <input type="text" id="utel" placeholder="생년월일(8자리)">
+    </div>
 
-        <div id="auth-section">
-            <h1 style="text-align: center;">반갑습니다!</h1>
-            <div class="input-group">
-                <label class="big-label">휴대폰 번호</label>
-                <input type="text" id="user-id" placeholder="010-1234-5678">
-            </div>
-            <div class="input-group">
-                <label class="big-label">비밀번호</label>
-                <input type="password" id="user-pw" placeholder="비밀번호 입력">
-            </div>
-            <div id="signup-extra" style="display: none;">
-                <label class="big-label">성함</label>
-                <input type="text" id="user-name" placeholder="홍길동">
-                <label class="big-label">생년월일 (8자리)</label>
-                <input type="text" id="user-birth" placeholder="19600101">
-            </div>
-            <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-join">처음 오셨나요? (회원가입)</button>
-            <button onclick="login()" id="btn-login-main" class="btn-login">로그인 하기</button>
-        </div>
+    <button onclick="login()" id="login-btn">로그인</button>
+    <button onclick="showSignup()" id="toggle-btn" class="secondary-btn">회원가입 하기</button>
+</div>
 
-        <div id="reserve-section" style="display: none;">
-            <div id="step-1" class="reserve-step">
-                <div class="calendar-container">
-                    <div class="calendar-header">
-                        <button onclick="changeMonth(-1)">◀ 이전달</button>
-                        <span id="current-month-display"></span>
-                        <button onclick="changeMonth(1)">다음달 ▶</button>
-                    </div>
-                    <div class="calendar-grid" id="calendar-grid"></div>
-                </div>
-                <button onclick="goToStep(2)" class="btn-login">다음 단계로 ▶</button>
-            </div>
+<div class="card" id="reserve-box" style="display:none;">
+    <h2>반갑습니다! 예약하기</h2>
+    <input type="date" id="rdate">
+    <select id="rtime">
+        <option value="09:00:00">오전 (09:00)</option>
+        <option value="13:00:00">오후 (13:00)</option>
+    </select>
+    <select id="rcourse">
+        <option value="경산 파크골프장">경산 파크골프장</option>
+        <option value="하양 파크골프장">하양 파크골프장</option>
+    </select>
+    <button onclick="reserve()">예약 완료</button>
+</div>
 
-            <div id="step-2" class="reserve-step" style="display: none;">
-                <label class="big-label">구장 선택</label>
-                <select id="court">
-                    <option value="경산 파크골프장">경산 파크골프장</option>
-                    <option value="하양 파크골프장">하양 파크골프장</option>
-                </select>
-                <label class="big-label">시간 선택</label>
-                <div class="time-btn-group">
-                    <button class="time-btn" onclick="selectTime('오전반', this)">오전 (09~12시)</button>
-                    <button class="time-btn" onclick="selectTime('오후반', this)">오후 (13~17시)</button>
-                </div>
-                <button onclick="goToStep(3)" class="btn-login">최종 확인하기 ▶</button>
-            </div>
+<script>
+    const _supabase = supabase.createClient('https://cxihknkegqjllaetliui.supabase.co', 'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK');
 
-            <div id="step-3" class="reserve-step" style="display: none;">
-                <div id="final-check" style="background:#fff; padding:20px; border-radius:15px; border:2px dashed #2e7d32;"></div>
-                <button onclick="reserve()" class="btn-login" style="background:#e91e63;">예약 완료하기 ✔️</button>
-            </div>
+    // 회원가입 창 보이기
+    function showSignup() {
+        document.getElementById('signup-more').style.display = 'block';
+        document.getElementById('login-btn').style.display = 'none';
+        document.getElementById('toggle-btn').innerText = '정보 입력 후 가입 완료';
+        document.getElementById('toggle-btn').onclick = signup;
+    }
 
-            <div id="result" style="display: none; padding: 25px; border: 3px solid #2e7d32; border-radius: 20px; background: white; text-align: center; margin-top: 20px;"></div>
-        </div>
-    </main>
+    // 1. 회원가입 (member 테이블)
+    async function signup() {
+        const { error } = await _supabase.from('member').insert([{ 
+            mem_id: document.getElementById('uid').value, 
+            mem_pw: document.getElementById('upw').value,
+            mem_name: document.getElementById('uname').value,
+            mem_tel: document.getElementById('utel').value 
+        }]);
+        if (error) alert("가입 실패: " + error.message);
+        else { alert("가입 성공!"); location.reload(); }
+    }
 
-    <script>
-        // [자바스크립트 로직]
-        const SUPABASE_URL = 'https://cxihknkegqjllaetliui.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK'; 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 2. 로그인 (member 테이블)
+    async function login() {
+        const { data } = await _supabase.from('member').select('*')
+            .eq('mem_id', document.getElementById('uid').value)
+            .eq('mem_pw', document.getElementById('upw').value).single();
+        if (data) {
+            localStorage.setItem('user', data.mem_id);
+            document.getElementById('auth-box').style.display = 'none';
+            document.getElementById('reserve-box').style.display = 'block';
+        } else { alert("정보가 틀립니다."); }
+    }
 
-        let selectedDate = "";
-        let selectedTime = "";
-        let currentMonth = new Date();
-
-        function toggleSignup() {
-            document.getElementById("signup-extra").style.display = "block";
-            const btn = document.getElementById("btn-signup-toggle");
-            btn.innerText = "가입 완료하기 (클릭)";
-            btn.style.backgroundColor = "#2e7d32";
-            btn.style.color = "white";
-            btn.onclick = signup; // 버튼의 기능을 '가입'으로 변경
-        }
-
-        async function signup() {
-            const id = document.getElementById("user-id").value;
-            const pw = document.getElementById("user-pw").value;
-            const name = document.getElementById("user-name").value;
-            const tel = document.getElementById("user-birth").value; 
-
-            if (!id || !pw || !name || !tel) return alert("빈칸을 모두 채워주세요!");
-
-            const { error } = await _supabase
-                .from('회원')
-                .insert([{ mem_id: id, mem_pw: pw, mem_name: name, mem_tel: tel }]);
-
-            if (error) alert("가입 실패: " + error.message);
-            else {
-                alert("회원가입 성공! 이제 로그인해주세요.");
-                location.reload();
-            }
-        }
-
-        async function login() {
-            const id = document.getElementById("user-id").value;
-            const pw = document.getElementById("user-pw").value;
-            
-            const { data, error } = await _supabase
-                .from('회원')
-                .select('*').eq('mem_id', id).eq('mem_pw', pw).single();
-
-            if (data) {
-                localStorage.setItem("userId", id);
-                document.getElementById("auth-section").style.display = "none";
-                document.getElementById("reserve-section").style.display = "block";
-                renderCalendar();
-            } else {
-                alert("아이디 또는 비밀번호가 틀립니다.");
-            }
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById("calendar-grid");
-            const display = document.getElementById("current-month-display");
-            grid.innerHTML = "";
-            const year = currentMonth.getFullYear();
-            const month = currentMonth.getMonth();
-            display.innerText = `${year}년 ${month + 1}월`;
-            ['일','월','화','수','목','금','토'].forEach(d => {
-                const div = document.createElement("div"); div.className = "day-label"; div.innerText = d; grid.appendChild(div);
-            });
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement("div"));
-            for (let i = 1; i <= lastDate; i++) {
-                const cell = document.createElement("div"); cell.className = "day"; cell.innerText = i;
-                cell.onclick = () => {
-                    document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
-                    cell.classList.add("selected");
-                    selectedDate = `${year}-${month + 1}-${i}`;
-                };
-                grid.appendChild(cell);
-            }
-        }
-
-        function changeMonth(diff) { currentMonth.setMonth(currentMonth.getMonth() + diff); renderCalendar(); }
-        
-        function selectTime(time, btn) {
-            selectedTime = time;
-            document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-        }
-
-        function goToStep(n) {
-            document.querySelectorAll(".reserve-step").forEach(s => s.style.display = "none");
-            document.getElementById(`step-${n}`).style.display = "block";
-            if(n===3) {
-                document.getElementById("final-check").innerHTML = `날짜: ${selectedDate}<br>시간: ${selectedTime}<br>구장: ${document.getElementById("court").value}`;
-            }
-        }
-
-        async function reserve() {
-            const id = localStorage.getItem("userId");
-            const { error } = await _supabase.from('예약').insert([{ 
-                mem_id: id, 
-                course_name: document.getElementById("court").value,
-                res_date: selectedDate,
-                res_time: selectedTime
-            }]);
-            if (error) alert("실패: " + error.message);
-            else {
-                alert("예약 성공!");
-                document.getElementById("step-3").style.display = "none";
-                document.getElementById("result").style.display = "block";
-                document.getElementById("result").innerText = "예약이 정상적으로 완료되었습니다.";
-            }
-        }
-
-        function goHome() { location.reload(); }
-        function showMyInfo() { alert("내 아이디: " + localStorage.getItem("userId")); }
-    </script>
+    // 3. 예약하기 (reservation 테이블)
+    async function reserve() {
+        const { error } = await _supabase.from('reservation').insert([{
+            mem_id: localStorage.getItem('user'),
+            res_date: document.getElementById('rdate').value,
+            res_time: document.getElementById('rtime').value,
+            course_name: document.getElementById('rcourse').value
+        }]);
+        if (error) alert("예약 실패: " + error.message);
+        else alert("예약이 완료되었습니다!");
+    }
+</script>
 </body>
 </html>
