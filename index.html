@@ -6,11 +6,19 @@
     <title>경산시 골프 예약 센터</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* 사용자님 기존 UI 스타일 유지 */
         body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f4; margin: 0; padding: 0; }
         .top-nav { background: #2e7d32; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .nav-logo { font-size: 1.5rem; font-weight: bold; cursor: pointer; }
+        
+        /* 메뉴 버튼 스타일 복구 */
+        .nav-menu span { margin-left: 15px; cursor: pointer; font-size: 0.9rem; opacity: 0.9; }
+        .nav-menu span:hover { opacity: 1; text-decoration: underline; }
+        .user-info { color: #ffeb3b; font-weight: bold; margin-right: 10px; }
+
         .center-content { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .step-indicator { text-align: center; margin-bottom: 20px; font-weight: bold; color: #2e7d32; font-size: 1.2rem; }
+        
+        /* 달력 및 UI 요소 (이전과 동일) */
         .calendar-header { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 20px; font-size: 1.8rem; font-weight: bold; }
         #current-month-display { display: inline-block; white-space: nowrap; text-align: center; min-width: 160px; }
         .calendar-header button { padding: 8px 20px; font-size: 1.2rem; cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; }
@@ -18,7 +26,6 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
         .day-label { font-weight: bold; padding: 10px; color: #666; font-size: 1.2rem; text-align: center; }
         .day { padding: 25px 10px; border-radius: 10px; cursor: pointer; font-size: 1.6rem; font-weight: bold; border: 2px solid #eee; text-align: center; }
-        .day:hover:not(.disabled) { background-color: #e8f5e9; border-color: #2e7d32; }
         .day.selected { background-color: #2e7d32; color: white; border-color: #1b5e20; }
         .time-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .time-btn { padding: 15px 10px; font-size: 1.4rem; border: 3px solid #ddd; border-radius: 12px; background: white; cursor: pointer; font-weight: bold; }
@@ -27,14 +34,17 @@
         input, select { font-size: 1.3rem !important; padding: 15px !important; width: 100%; box-sizing: border-box; border-radius: 10px; border: 1px solid #ccc; }
         button.btn-login { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: #2e7d32; color: white; }
         .btn-join { width: 100%; padding: 15px; border: 2px solid #2e7d32; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: #fff; color: #2e7d32; }
-        .step-indicator { text-align: center; margin-bottom: 20px; font-weight: bold; color: #2e7d32; font-size: 1.2rem; }
     </style>
 </head>
 <body>
     <header class="top-nav">
         <div class="nav-logo" onclick="location.reload()">⛳ 경산시 골프 예약 센터</div>
         <div class="nav-menu">
-            <span onclick="location.reload()" style="color:#ffeb3b; cursor:pointer;">로그아웃</span>
+            <span onclick="alert('준비 중인 서비스입니다.')">공지사항</span>
+            <span onclick="alert('준비 중인 서비스입니다.')">게시판</span>
+            <span onclick="alert('준비 중인 서비스입니다.')">고객센터</span>
+            <span id="user-display-name" class="user-info"></span>
+            <span id="logout-btn" onclick="handleLogout()" style="display:none; color:#ffeb3b;">로그아웃</span>
         </div>
     </header>
 
@@ -105,7 +115,6 @@
     </main>
 
     <script>
-        // Supabase 초기화 (기존 키 유지)
         const _supabase = supabase.createClient('https://cxihknkegqjllaetliui.supabase.co', 'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK');
 
         let isSignupMode = false;
@@ -113,7 +122,29 @@
         let selTime = "";
         let currentMonth = new Date();
 
-        // [인증] 모드 전환
+        window.onload = function() {
+            const savedUid = localStorage.getItem('uid');
+            const savedUname = localStorage.getItem('uname');
+            if (savedUid && savedUname) {
+                showReserveSection(savedUname);
+            }
+        };
+
+        function showReserveSection(name) {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('reserve-section').style.display = 'block';
+            document.getElementById('user-display-name').innerText = name + " 님";
+            document.getElementById('logout-btn').style.display = 'inline';
+            initCalendar();
+        }
+
+        function handleLogout() {
+            if(confirm("로그아웃 하시겠습니까?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
         function toggleSignup() {
             isSignupMode = !isSignupMode;
             document.getElementById('signup-extra').style.display = isSignupMode ? 'block' : 'none';
@@ -121,7 +152,6 @@
             document.getElementById('btn-signup-toggle').innerText = isSignupMode ? '로그인으로 돌아가기' : '처음 오셨나요? (회원가입)';
         }
 
-        // [인증] 로그인 및 회원가입 처리
         async function handleAuth() {
             const id = document.getElementById('user-id').value;
             const pw = document.getElementById('user-pw').value;
@@ -129,8 +159,6 @@
             if (isSignupMode) {
                 const name = document.getElementById('user-name').value;
                 const birth = document.getElementById('user-birth').value;
-                if(!id || !pw || !name) return alert("모든 정보를 입력해주세요.");
-                
                 const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name, mem_tel: birth }]);
                 if (error) alert("가입 실패: " + error.message);
                 else { alert("가입 성공! 로그인 해주세요."); location.reload(); }
@@ -139,14 +167,11 @@
                 if (data) {
                     localStorage.setItem('uid', id);
                     localStorage.setItem('uname', data.mem_name);
-                    document.getElementById('auth-section').style.display = 'none';
-                    document.getElementById('reserve-section').style.display = 'block';
-                    initCalendar();
+                    showReserveSection(data.mem_name);
                 } else { alert("정보가 일치하지 않습니다."); }
             }
         }
 
-        // [예약] 달력 생성
         function initCalendar() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
@@ -187,7 +212,6 @@
             btn.classList.add('active');
         }
 
-        // [예약] 단계 전환
         function goToStep(n) {
             if (n === 2 && !selDate) return alert("날짜를 선택해주세요.");
             if (n === 3 && !selTime) return alert("시간을 선택해주세요.");
@@ -208,40 +232,24 @@
             }
         }
 
-        // [DB] 최종 예약 저장 (중복 방지 로직 포함)
         async function reserve() {
             const course = document.getElementById('court').value;
+            const { data: existing } = await _supabase.from('reservation').select('*').eq('res_date', selDate).eq('res_time', selTime).eq('course_name', course);
 
-            // 1. 중복 확인 조회
-            const { data: existing, error: checkError } = await _supabase
-                .from('reservation')
-                .select('*')
-                .eq('res_date', selDate)
-                .eq('res_time', selTime)
-                .eq('course_name', course);
-
-            if (checkError) return alert("오류 발생: " + checkError.message);
-
-            // 2. 이미 예약이 있으면 중단
             if (existing && existing.length > 0) {
-                alert("이미 해당 시간에 예약이 꽉 찼습니다. 다른 날짜나 시간을 선택해주세요.");
-                goToStep(2); // 시간 선택 단계로 백업
-                return;
+                alert("이미 해당 시간에 예약이 존재합니다.");
+                return goToStep(2);
             }
 
-            // 3. 중복 없으면 저장
-            const { error: insertError } = await _supabase.from('reservation').insert([{
+            const { error } = await _supabase.from('reservation').insert([{
                 mem_id: localStorage.getItem('uid'),
                 res_date: selDate,
                 res_time: selTime,
                 course_name: course
             }]);
 
-            if (insertError) alert("저장 실패: " + insertError.message);
-            else {
-                alert("예약이 완료되었습니다!");
-                location.reload();
-            }
+            if (error) alert("예약 실패: " + error.message);
+            else { alert("🎉 예약이 완료되었습니다!"); location.reload(); }
         }
     </script>
 </body>
