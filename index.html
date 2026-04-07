@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>경산시 골프 예약 센터</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 글자 크기 조금 더 키웠습니다. */
         body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f4; margin: 0; padding: 0; }
         .calendar-header { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 20px; font-size: 1.8rem; font-weight: bold; }
         #current-month-display { display: inline-block; white-space: nowrap; text-align: center; min-width: 160px; }
@@ -129,21 +129,15 @@
             <div class="info-card">
                 <div id="info-guide" class="info-content" style="display:none;">
                     <h1 style="color:#2e7d32; text-align:center;">구장 이용 안내</h1>
-                    <div style="background:white; padding:40px; border-radius:15px; text-align:center; color:#999; border:1px solid #eee;">
-                        내용을 준비 중입니다.
-                    </div>
+                    <div style="background:white; padding:40px; border-radius:15px; text-align:center; color:#999; border:1px solid #eee;">내용을 준비 중입니다.</div>
                 </div>
                 <div id="info-notice" class="info-content" style="display:none;">
                     <h1 style="color:#2e7d32; text-align:center;">공지사항</h1>
-                    <div style="background:white; padding:40px; border-radius:15px; text-align:center; color:#999; border:1px solid #eee;">
-                        등록된 공지사항이 없습니다.
-                    </div>
+                    <div style="background:white; padding:40px; border-radius:15px; text-align:center; color:#999; border:1px solid #eee;">등록된 공지사항이 없습니다.</div>
                 </div>
                 <div id="info-cs" class="info-content" style="display:none;">
                     <h1 style="color:#e65100; text-align:center;">고객센터</h1>
-                    <div style="background:white; padding:40px; border-radius:15px; text-align:center; color:#999; border:1px solid #eee;">
-                        상담 전화번호를 준비 중입니다.
-                    </div>
+                    <div style="background:white; padding:40px; border-radius:15px; text-align:center; color:#999; border:1px solid #eee;">상담 전화번호를 준비 중입니다.</div>
                 </div>
                 <button onclick="goHome()" style="width:100%; padding:15px; background:#2e7d32; color:white; border:none; border-radius:12px; font-size:1.2rem; font-weight:bold; cursor:pointer; margin-top:20px;">처음 화면</button>
             </div>
