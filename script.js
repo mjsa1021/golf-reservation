@@ -1,10 +1,13 @@
+// 1. Supabase 설정 (질문자님의 실제 주소와 키를 적용했습니다)
+const SUPABASE_URL = 'https://cxihknkegqjllaetliui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK'; 
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 let selectedDate = "";
 let selectedTime = "";
 let currentMonth = new Date();
 
-const BASE_URL = "https://golf-reservation-seven.vercel.app";
-
-// 퐈면 전환 
+// 화면 전환 로직
 function goToStep(stepNumber) {
     document.querySelectorAll('.reserve-step').forEach(step => step.style.display = 'none');
     const target = document.getElementById(`step-${stepNumber}`);
@@ -26,7 +29,7 @@ function goToStep(stepNumber) {
     }
 }
 
-// [8, 9, 10번 반영] 안내 페이지 추가부분
+// 안내 페이지 로직
 function goToInfo(type) {
     document.getElementById("auth-section").style.display = "none";
     document.getElementById("reserve-section").style.display = "none";
@@ -46,7 +49,7 @@ function goBackHome() {
     else document.getElementById("auth-section").style.display = "block";
 }
 
-// 달력 그리기 로직
+// 달력 그리기
 function renderCalendar() {
     const grid = document.getElementById("calendar-grid");
     const display = document.getElementById("current-month-display");
@@ -85,50 +88,82 @@ function selectTime(time, btn) {
     btn.classList.add("active"); 
 }
 
-// 로그인 및 회원가입
-function login() {
+// [로그인] Supabase '회원' 테이블에서 확인
+async function login() {
     const id = document.getElementById("user-id").value;
     const pw = document.getElementById("user-pw").value;
     if (!id || !pw) return alert("번호와 비밀번호를 입력해주세요.");
-    fetch(`${BASE_URL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, password: pw })
-    }).then(async res => {
-        if (res.ok) {
-            localStorage.setItem("userId", id);
-            document.getElementById("auth-section").style.display = "none";
-            document.getElementById("reserve-section").style.display = "block";
-            goToStep(1); renderCalendar();
-        } else alert("정보가 맞지 않습니다. 다시 확인해주세요.");
-    }).catch(err => alert("서버 연결 실패"));
+
+    const { data, error } = await _supabase
+        .from('회원')
+        .select('*')
+        .eq('mem_id', id)
+        .eq('mem_pw', pw)
+        .single();
+
+    if (data) {
+        localStorage.setItem("userId", id);
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("reserve-section").style.display = "block";
+        goToStep(1); renderCalendar();
+    } else {
+        alert("정보가 맞지 않습니다. 다시 확인해주세요.");
+    }
 }
 
-function reserve() {
+// [회원가입] Supabase '회원' 테이블에 저장
+async function signup() {
+    const id = document.getElementById("user-id").value;
+    const pw = document.getElementById("user-pw").value;
+    const name = document.getElementById("user-name").value;
+    const tel = document.getElementById("user-birth").value; 
+
+    if (!id || !pw || !name || !tel) return alert("모든 빈칸을 채워주세요.");
+
+    const { error } = await _supabase
+        .from('회원')
+        .insert([{ mem_id: id, mem_pw: pw, mem_name: name, mem_tel: tel }]);
+
+    if (error) {
+        alert("가입 실패: " + error.message);
+    } else {
+        alert("회원가입 성공! 이제 DB에 영구 보관됩니다.");
+        location.reload();
+    }
+}
+
+// [예약하기] Supabase '예약' 테이블에 무한 기록
+async function reserve() {
     const court = document.getElementById("court").value;
-    const people = document.getElementById("people-count").value;
     const userId = localStorage.getItem("userId");
+    
     if (!selectedDate || !selectedTime) return alert("날짜와 시간을 선택해주세요.");
-    fetch(`${BASE_URL}/reserve`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, date: selectedDate, time: selectedTime, court, people })
-    }).then(async res => {
-        if (res.ok) {
-            alert("예약이 완료되었습니다!");
-            document.querySelectorAll('.reserve-step').forEach(s => s.style.display = 'none');
-            const resultDiv = document.getElementById("result");
-            resultDiv.style.display = "block";
-            const bNo = "G-" + Math.floor(Math.random() * 1000000);
-            resultDiv.innerHTML = `
-                <h2 style="color:#2e7d32;">[예약 완료 확인서]</h2>
-                <div style="background:#f0f0f0; padding:15px; font-size:1.5rem; margin:10px 0;">접수번호: ${bNo}</div>
-                <p>일시: ${selectedDate} ${selectedTime}</p>
-                <p>장소: ${court} (${people}명)</p>
-                <p style="font-size:0.9rem; color:#666;">현장 관리자에게 접수번호를 보여주세요.</p>
-            `;
-        } else alert(await res.text());
-    });
+
+    const { error } = await _supabase
+        .from('예약')
+        .insert([{ 
+            mem_id: userId, 
+            course_name: court, 
+            res_date: selectedDate, 
+            res_time: selectedTime,
+            status: '예약완료' 
+        }]);
+
+    if (error) {
+        alert("예약 실패: " + error.message);
+    } else {
+        alert("예약 완료! 관리자가 확인 가능합니다.");
+        document.querySelectorAll('.reserve-step').forEach(s => s.style.display = 'none');
+        const resultDiv = document.getElementById("result");
+        resultDiv.style.display = "block";
+        const bNo = "G-" + Math.floor(Math.random() * 1000000);
+        resultDiv.innerHTML = `
+            <h2 style="color:#2e7d32;">[예약 완료 확인서]</h2>
+            <div style="background:#f0f0f0; padding:15px; font-size:1.5rem; margin:10px 0;">접수번호: ${bNo}</div>
+            <p>일시: ${selectedDate} ${selectedTime}</p>
+            <p>장소: ${court}</p>
+        `;
+    }
 }
 
 function toggleSignup() {
@@ -139,38 +174,5 @@ function toggleSignup() {
     btn.onclick = signup;
 }
 
-function signup() {
-    const id = document.getElementById("user-id").value;
-    const pw = document.getElementById("user-pw").value;
-    const name = document.getElementById("user-name").value;
-    const birth = document.getElementById("user-birth").value;
-    if (!id || !pw || !name || !birth) return alert("모든 빈칸을 채워주세요.");
-    fetch(`${BASE_URL}/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, password: pw, name, birth })
-    }).then(async res => {
-        alert(await res.text());
-        if (res.ok) location.reload();
-    });
-}
-
-function findAccount() {
-    const name = document.getElementById("find-name").value;
-    const birth = document.getElementById("find-birth").value;
-    fetch(`${BASE_URL}/find-account`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, birth })
-    }).then(async res => alert(await res.text()));
-}
-
-function showFindModal() { document.getElementById("find-modal").style.display = "block"; }
-function closeFindModal() { document.getElementById("find-modal").style.display = "none"; }
 function goHome() { location.reload(); }
 function showMyInfo() { alert("내 가입 번호: " + localStorage.getItem("userId")); }
-function checkMyReserve() { 
-    const resDiv = document.getElementById("result");
-    if(resDiv.style.display === "none") alert("아직 예약 내역이 없습니다.");
-    else resDiv.scrollIntoView({ behavior: 'smooth' });
-}
