@@ -252,8 +252,8 @@
 
             if (error) alert("예약 실패: " + error.message);
             else {
-                alert("🎉 예약이 성공적으로 완료되었습니다!");
-                location.reload(); // 이제 새로고침해도 로그인이 유지되므로 바로 날짜 선택이 뜹니다.
+                alert("예약이 성공적으로 완료되었습니다!");
+                location.reload(); 
             }
         }
     </script>
