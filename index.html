@@ -6,6 +6,7 @@
     <title>경산시 골프 예약 센터</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* 사용자님의 기존 UI 스타일 그대로 유지 */
         body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f4; margin: 0; padding: 0; }
         .top-nav { background: #2e7d32; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .nav-logo { font-size: 1.5rem; font-weight: bold; cursor: pointer; }
@@ -123,7 +124,7 @@
 
             if (data) {
                 localStorage.setItem('uid', id);
-                localStorage.setItem('uname', data.mem_name);
+                localStorage.setItem('uname', data.mem_name); // 예약 완료 시 이름을 보여주기 위해 저장
                 document.getElementById('auth-section').style.display = 'none';
                 document.getElementById('reserve-section').style.display = 'block';
                 initCalendar();
@@ -149,6 +150,7 @@
                 d.onclick = () => {
                     document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
                     d.classList.add('selected');
+                    // SQL DATE 형식에 맞게 YYYY-MM-DD 포맷팅
                     selDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 };
                 grid.appendChild(d);
@@ -172,7 +174,7 @@
             document.getElementById('step-2').style.display = 'block';
         }
 
-        // 실질적인 DB 저장 함수
+        // 실제 DB 저장 처리
         async function doReserve() {
             const course = document.getElementById('course-name').value;
             const uid = localStorage.getItem('uid');
@@ -186,7 +188,7 @@
             }]);
 
             if (error) {
-                alert("예약 오류: " + error.message);
+                alert("예약 중 오류가 발생했습니다: " + error.message);
             } else {
                 document.getElementById('step-2').style.display = 'none';
                 document.getElementById('step-3').style.display = 'block';
