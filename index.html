@@ -10,7 +10,7 @@
         .top-nav { background: #2e7d32; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .nav-logo { font-size: 1.5rem; font-weight: bold; cursor: pointer; }
         
-        /* 메뉴 버튼 스타일 복구 */
+        /* 메뉴 버튼 */
         .nav-menu span { margin-left: 15px; cursor: pointer; font-size: 0.9rem; opacity: 0.9; }
         .nav-menu span:hover { opacity: 1; text-decoration: underline; }
         .user-info { color: #ffeb3b; font-weight: bold; margin-right: 10px; }
@@ -18,7 +18,7 @@
         .center-content { padding: 20px; max-width: 600px; margin: 0 auto; }
         .step-indicator { text-align: center; margin-bottom: 20px; font-weight: bold; color: #2e7d32; font-size: 1.2rem; }
         
-        /* 달력 및 UI 요소 (이전과 동일) */
+        /* 달력 및 UI 요소 */
         .calendar-header { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 20px; font-size: 1.8rem; font-weight: bold; }
         #current-month-display { display: inline-block; white-space: nowrap; text-align: center; min-width: 160px; }
         .calendar-header button { padding: 8px 20px; font-size: 1.2rem; cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; }
@@ -161,7 +161,7 @@
                 const birth = document.getElementById('user-birth').value;
                 const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name, mem_tel: birth }]);
                 if (error) alert("가입 실패: " + error.message);
-                else { alert("가입 성공! 로그인 해주세요."); location.reload(); }
+                else { alert("가입 성공"); location.reload(); }
             } else {
                 const { data } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
                 if (data) {
@@ -249,7 +249,7 @@
             }]);
 
             if (error) alert("예약 실패: " + error.message);
-            else { alert("🎉 예약이 완료되었습니다!"); location.reload(); }
+            else { alert("예약이 완료되었습니다!"); location.reload(); }
         }
     </script>
 </body>
