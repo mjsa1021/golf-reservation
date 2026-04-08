@@ -1,62 +1,50 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const db = require('../db'); // 드디어 DB 연결!
+
 app.use(cors());
 app.use(express.json());
 
-let users = [];
-let reservations = [];
-
+// 회원가입 API
 app.post('/signup', (req, res) => {
     const { id, password, name, birth } = req.body;
     
-    if (users.find(u => u.id === id)) {
-        return res.status(400).send("이미 가입된 휴대폰 번호입니다.");
-    }
+    // DB에 데이터 넣기 (SQL 쿼리문)
+    const sql = "INSERT INTO member (mem_id, mem_pw, mem_name, mem_tel) VALUES (?, ?, ?, ?)";
     
-    users.push({ id, password, name, birth });
-    res.send("회원가입이 정상적으로 완료되었습니다!");
+    db.query(sql, [id, password, name, id], (err, result) => {
+        if (err) {
+            console.error("DB 저장 에러:", err);
+            return res.status(500).send("회원가입 중 오류가 발생했습니다.");
+        }
+        res.send("회원가입이 정상적으로 완료되었습니다!");
+    });
 });
 
+// 로그인 API
 app.post('/login', (req, res) => {
     const { id, password } = req.body;
-    const user = users.find(u => u.id === id && u.password === password);
     
-    if (user) {
-        res.send("로그인 성공! 환영합니다.");
-    } else {
-        res.status(401).send("아이디나 비밀번호가 틀렸습니다. 다시 확인해주세요.");
-    }
+    const sql = "SELECT * FROM member WHERE mem_id = ? AND mem_pw = ?";
+    
+    db.query(sql, [id, password], (err, results) => {
+        if (err) return res.status(500).send("서버 에러");
+        
+        if (results.length > 0) {
+            res.send("로그인 성공! 환영합니다.");
+        } else {
+            res.status(401).send("아이디나 비밀번호가 틀렸습니다.");
+        }
+    });
 });
 
-app.post('/find-account', (req, res) => {
-    const { name, birth } = req.body;
-    const user = users.find(u => u.name === name && u.birth === birth);
-    
-    if (user) {
-        res.send(`정보를 찾았습니다!\n\n아이디(번호): ${user.id}\n비밀번호: ${user.password}`);
-    } else {
-        res.status(404).send("일치하는 회원 정보가 없습니다. 이름과 생년월일을 확인해주세요.");
-    }
-});
+// Vercel을 위한 서버 실행 설정 (로컬 테스트용)
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = 3000;
+    app.listen(PORT, () => {
+        console.log(`서버가 http://localhost:${PORT} 에서 돌아가는 중!`);
+    });
+}
 
-app.post('/reserve', (req, res) => {
-    const { userId, date, time, court, people } = req.body;
-    
-    const isBooked = reservations.find(r => 
-        r.date === date && 
-        r.time === time && 
-        r.court === court
-    );
-
-    if (isBooked) {
-        return res.status(400).send("이미 다른 분이 예약하신 시간대입니다. 다른 시간을 선택해주세요.");
-    }
-
-    // 예약 저장
-    reservations.push({ userId, date, time, court, people });
-    res.send("예약이 정상적으로 신청되었습니다.");
-});
-
-// Vercel 배포를 위한 모듈 내보내기
 module.exports = app;
