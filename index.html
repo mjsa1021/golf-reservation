@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>경산시 골프 예약 센터</title>
-    
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f4; margin: 0; padding: 0; }
         .top-nav { background: #2e7d32; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -122,7 +121,6 @@
     let selTime = "";
     let currentMonth = new Date();
 
-    // 서버 주소 (로컬 테스트 시)
     const API_URL = 'http://localhost:3000';
 
     window.onload = function() {
@@ -137,7 +135,7 @@
         document.getElementById('user-display-name').innerText = name + " 님";
         document.getElementById('logout-btn').style.display = 'inline';
         initCalendar();
-        // fetchMyReservations(); // 예약 기능 연동 시 활성화
+        // fetchMyReservations(); // 추후 예약 내역 조회 기능 구현 시 호출
     }
 
     function toggleSignup() {
@@ -147,7 +145,6 @@
         document.getElementById('btn-signup-toggle').innerText = isSignupMode ? '로그인으로 돌아가기' : '처음 오셨나요? (회원가입)';
     }
 
-    // [핵심] 회원가입 및 로그인 연동 함수
     async function handleAuth() {
         const id = document.getElementById('user-id').value;
         const pw = document.getElementById('user-pw').value;
@@ -155,8 +152,6 @@
         if (isSignupMode) {
             const name = document.getElementById('user-name').value;
             const birth = document.getElementById('user-birth').value;
-
-            // 회원가입 요청
             try {
                 const response = await fetch(`${API_URL}/signup`, {
                     method: 'POST',
@@ -174,22 +169,18 @@
                 alert("서버 연결 실패!");
             }
         } else {
-            // 로그인 요청
             try {
                 const response = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, password: pw })
                 });
-                const result = await response.text();
                 if (response.ok) {
                     localStorage.setItem('uid', id);
-                    // 로그인 성공 시 서버에서 이름을 받아오는 로직이 필요하지만, 
-                    // 우선 아이디를 이름으로 임시 표시합니다.
                     localStorage.setItem('uname', id); 
                     showReserveSection(id);
                 } else {
-                    alert("로그인 실패: " + result);
+                    alert("로그인 실패: 정보가 일치하지 않습니다.");
                 }
             } catch (err) {
                 alert("서버 연결 실패!");
@@ -197,7 +188,37 @@
         }
     }
 
-    // --- 달력 및 기타 기능 (기존과 동일) ---
+    // [핵심 수정] 실제 서버로 예약을 전송하는 함수
+    async function reserve() {
+        const uid = localStorage.getItem('uid');
+        const court = document.getElementById('court').value;
+        
+        if (!selDate || !selTime) return alert("날짜와 시간을 선택해주세요.");
+
+        try {
+            const response = await fetch(`${API_URL}/reserve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    uid: uid, 
+                    res_date: selDate, 
+                    res_time: selTime, 
+                    court_name: court 
+                })
+            });
+
+            if (response.ok) {
+                alert("예약이 완료되었습니다!");
+                location.reload();
+            } else {
+                const errorText = await response.text();
+                alert("예약 실패: " + errorText);
+            }
+        } catch (err) {
+            alert("서버 연결 에러가 발생했습니다.");
+        }
+    }
+
     function initCalendar() {
         const grid = document.getElementById('calendar-grid');
         grid.innerHTML = '';
@@ -223,12 +244,15 @@
             grid.appendChild(d);
         }
     }
+
     function changeMonth(diff) { currentMonth.setMonth(currentMonth.getMonth() + diff); initCalendar(); }
+    
     function selectTime(t, btn) {
         selTime = t;
         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
+
     function goToStep(n) {
         if (n === 2 && !selDate) return alert("날짜 선택 필수");
         if (n === 3 && !selTime) return alert("시간 선택 필수");
@@ -244,8 +268,8 @@
             `;
         }
     }
+
     function handleLogout() { if(confirm("로그아웃 하시겠습니까?")) { localStorage.clear(); location.reload(); } }
 </script>
-
 </body>
 </html>
