@@ -1,0 +1,22 @@
+CREATE DATABASE IF NOT EXISTS golf_db;
+USE golf_db;
+
+CREATE TABLE IF NOT EXISTS reservations (
+    res_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '예약 고유번호',
+    user_id VARCHAR(50) NOT NULL COMMENT '사용자 아이디(전화번호)',
+    res_date DATE NOT NULL COMMENT '예약 날짜',
+    res_time TIME NOT NULL COMMENT '예약 시간',
+    court_name VARCHAR(50) NOT NULL COMMENT '코스 이름',
+    people_count INT DEFAULT 1 COMMENT '인원 수',
+    qr_token VARCHAR(255) UNIQUE NOT NULL COMMENT 'QR코드 검증용 고유 토큰',
+    status ENUM('pending', 'used', 'cancelled') DEFAULT 'pending' COMMENT '예약 상태',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '예약 생성일'
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id VARCHAR(50) PRIMARY KEY COMMENT '휴대폰 번호',
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    birth VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
