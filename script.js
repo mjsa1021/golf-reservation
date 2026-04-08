@@ -35,10 +35,10 @@ function showInfo(type) {
     
     if(type === 'notice') {
         title.innerText = "공지사항";
-        body.innerHTML = "• 매주 월요일은 정기 점검일로 휴장합니다.<br>• 경산 시민은 현장에서 신분증 확인 시 우대 혜택이 있습니다.";
+        body.innerHTML = "준비 중입니다.";
     } else {
-        title.innerText = "자유 게시판";
-        body.innerHTML = "사용자 간의 소통을 위한 게시판 서비스 준비 중입니다.";
+        title.innerText = "게시판";
+        body.innerHTML = "준비 중입니다.";
     }
 }
 
