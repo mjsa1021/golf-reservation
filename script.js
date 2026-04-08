@@ -1,111 +1,10 @@
-/* ==========================================
-   1. 초기 설정
-   ========================================== */
 let selectedDate = "";
 let selectedTime = "";
 let currentMonth = new Date();
 
-/* ==========================================
-   2. 회원 관리 (회원가입 먹통 해결 버전)
-   ========================================== */
+const BASE_URL = "https://golf-reservation-seven.vercel.app";
 
-// [회원가입창 토글] - 버튼 클릭 시 입력창 노출 및 함수 연결
-function toggleSignup() {
-    console.log("회원가입 모드 전환");
-    const extra = document.getElementById("signup-extra");
-    if (extra) extra.style.display = "block";
-    
-    const btn = document.getElementById("btn-signup-toggle");
-    if (btn) {
-        btn.innerText = "위 정보로 가입하기";
-        btn.style.backgroundColor = "#2e7d32";
-        // [중요] 여기서 signup 함수를 버튼에 직접 연결합니다.
-        btn.onclick = signup; 
-    }
-}
-
-// [회원가입 실행] - Supabase 데이터 전송
-async function signup() {
-    console.log("signup 함수 진입"); // 로그 확인용
-
-    const id = document.getElementById("user-id").value;
-    const pw = document.getElementById("user-pw").value;
-    const name = document.getElementById("user-name").value;
-
-    if (!id || !pw || !name) {
-        alert("아이디, 비밀번호, 이름을 모두 입력해주세요.");
-        return;
-    }
-
-    try {
-        console.log("DB 데이터 전송 시작...");
-        const { data, error } = await _supabase
-            .from('member')
-            .insert([{
-                mem_id: id,
-                mem_pw: pw,
-                mem_name: name,
-                mem_tel: id 
-            }]);
-
-        if (error) {
-            console.error("Supabase 가입 에러:", error);
-            alert("가입 실패: " + error.message);
-        } else {
-            console.log("가입 성공!");
-            alert("회원가입이 완료되었습니다! 로그인 해주세요.");
-            location.reload(); // 성공 시 새로고침하여 로그인창으로 이동
-        }
-    } catch (e) {
-        console.error("시스템 에러:", e);
-        alert("연결 중 오류가 발생했습니다.");
-    }
-}
-
-// [로그인 실행]
-async function login() {
-    const id = document.getElementById("user-id").value;
-    const pw = document.getElementById("user-pw").value;
-    
-    if (!id || !pw) return alert("번호와 비밀번호를 입력해주세요.");
-
-    try {
-        const { data, error } = await _supabase
-            .from('member')
-            .select('*')
-            .eq('mem_id', id)
-            .eq('mem_pw', pw)
-            .single();
-
-        if (data) {
-            localStorage.setItem("userId", id);
-            localStorage.setItem("mem_no", data.mem_no);
-            alert(data.mem_name + "님 환영합니다!");
-            
-            document.getElementById("auth-section").style.display = "none";
-            document.getElementById("reserve-section").style.display = "block";
-            goToStep(1); 
-            renderCalendar();
-        } else {
-            alert("정보가 맞지 않습니다. 다시 확인해주세요.");
-        }
-    } catch (e) {
-        alert("로그인 중 오류가 발생했습니다.");
-    }
-}
-
-// [로그아웃]
-function handleLogout() {
-    if(confirm("로그아웃 하시겠습니까?")) {
-        localStorage.clear();
-        location.reload();
-    }
-}
-
-/* ==========================================
-   3. 화면 제어 로직 (백업본 유지)
-   ========================================== */
-
+// 퐈면 전환 
 function goToStep(stepNumber) {
     document.querySelectorAll('.reserve-step').forEach(step => step.style.display = 'none');
     const target = document.getElementById(`step-${stepNumber}`);
@@ -113,38 +12,41 @@ function goToStep(stepNumber) {
         target.style.display = 'block';
         window.scrollTo(0, 0);
     }
+
     if (stepNumber === 3) {
         const court = document.getElementById("court").value;
         const infoDiv = document.getElementById("final-check");
-        infoDiv.innerHTML = `<p>날짜: ${selectedDate}</p><p>시간: ${selectedTime}</p><p>구장: ${court}</p>`;
+        infoDiv.innerHTML = `
+            <p style="font-size:1.3rem; margin-bottom:10px;"><strong>[예약 내용 확인]</strong></p>
+            <p>날짜: ${selectedDate}</p>
+            <p>시간: ${selectedTime}</p>
+            <p>구장: ${court}</p>
+            <p style="color:red; font-weight:bold; margin-top:10px;">내용이 맞으시면 버튼을 눌러주세요.</p>
+        `;
     }
 }
 
+// [8, 9, 10번 반영] 안내 페이지 추가부분
 function goToInfo(type) {
     document.getElementById("auth-section").style.display = "none";
-    if (document.getElementById("reserve-section")) document.getElementById("reserve-section").style.display = "none";
-    if (document.getElementById("main-info-menu")) document.getElementById("main-info-menu").style.display = "none";
-    
+    document.getElementById("reserve-section").style.display = "none";
+    document.getElementById("main-info-menu").style.display = "none";
     document.getElementById("info-section").style.display = "block";
+    
     document.querySelectorAll('.info-content').forEach(el => el.style.display = "none");
-    const target = document.getElementById(`info-${type}`);
-    if (target) target.style.display = "block";
+    document.getElementById(`info-${type}`).style.display = "block";
+    window.scrollTo(0, 0);
 }
 
 function goBackHome() {
     document.getElementById("info-section").style.display = "none";
-    if (document.getElementById("main-info-menu")) document.getElementById("main-info-menu").style.display = "flex";
-    if (localStorage.getItem("userId")) {
-        document.getElementById("reserve-section").style.display = "block";
-    } else {
-        document.getElementById("auth-section").style.display = "block";
-    }
+    document.getElementById("main-info-menu").style.display = "flex";
+    const userId = localStorage.getItem("userId");
+    if (userId) document.getElementById("reserve-section").style.display = "block";
+    else document.getElementById("auth-section").style.display = "block";
 }
 
-/* ==========================================
-   4. 달력 및 예약 로직
-   ========================================== */
-
+// 달력 그리기 로직
 function renderCalendar() {
     const grid = document.getElementById("calendar-grid");
     const display = document.getElementById("current-month-display");
@@ -153,17 +55,13 @@ function renderCalendar() {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     display.innerText = `${year}년 ${month + 1}월`;
-    
     ['일','월','화','수','목','금','토'].forEach(d => {
         const div = document.createElement("div"); div.className = "day-label"; div.innerText = d; grid.appendChild(div);
     });
-    
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
     const today = new Date(); today.setHours(0,0,0,0);
-    
     for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement("div"));
-    
     for (let i = 1; i <= lastDate; i++) {
         const dateObj = new Date(year, month, i);
         const cell = document.createElement("div"); cell.className = "day"; cell.innerText = i;
@@ -187,28 +85,92 @@ function selectTime(time, btn) {
     btn.classList.add("active"); 
 }
 
-async function reserve() {
-    const court = document.getElementById("court").value;
-    const memNo = localStorage.getItem("mem_no");
-    if (!selectedDate || !selectedTime) return alert("날짜와 시간을 선택해주세요.");
-
-    const { error } = await _supabase
-        .from('reservation')
-        .insert([{
-            mem_no: memNo,
-            course_no: (court.includes("하양") ? 2 : 1),
-            res_date: selectedDate,
-            res_time: selectedTime,
-            status: '예약완료'
-        }]);
-
-    if (!error) {
-        alert("예약이 완료되었습니다!");
-        location.reload();
-    } else {
-        alert("예약 실패: " + error.message);
-    }
+// 로그인 및 회원가입
+function login() {
+    const id = document.getElementById("user-id").value;
+    const pw = document.getElementById("user-pw").value;
+    if (!id || !pw) return alert("번호와 비밀번호를 입력해주세요.");
+    fetch(`${BASE_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, password: pw })
+    }).then(async res => {
+        if (res.ok) {
+            localStorage.setItem("userId", id);
+            document.getElementById("auth-section").style.display = "none";
+            document.getElementById("reserve-section").style.display = "block";
+            goToStep(1); renderCalendar();
+        } else alert("정보가 맞지 않습니다. 다시 확인해주세요.");
+    }).catch(err => alert("서버 연결 실패"));
 }
 
-function showMyInfo() { alert("내 가입 번호: " + localStorage.getItem("userId")); }
+function reserve() {
+    const court = document.getElementById("court").value;
+    const people = document.getElementById("people-count").value;
+    const userId = localStorage.getItem("userId");
+    if (!selectedDate || !selectedTime) return alert("날짜와 시간을 선택해주세요.");
+    fetch(`${BASE_URL}/reserve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, date: selectedDate, time: selectedTime, court, people })
+    }).then(async res => {
+        if (res.ok) {
+            alert("예약이 완료되었습니다!");
+            document.querySelectorAll('.reserve-step').forEach(s => s.style.display = 'none');
+            const resultDiv = document.getElementById("result");
+            resultDiv.style.display = "block";
+            const bNo = "G-" + Math.floor(Math.random() * 1000000);
+            resultDiv.innerHTML = `
+                <h2 style="color:#2e7d32;">[예약 완료 확인서]</h2>
+                <div style="background:#f0f0f0; padding:15px; font-size:1.5rem; margin:10px 0;">접수번호: ${bNo}</div>
+                <p>일시: ${selectedDate} ${selectedTime}</p>
+                <p>장소: ${court} (${people}명)</p>
+                <p style="font-size:0.9rem; color:#666;">현장 관리자에게 접수번호를 보여주세요.</p>
+            `;
+        } else alert(await res.text());
+    });
+}
+
+function toggleSignup() {
+    document.getElementById("signup-extra").style.display = "block";
+    const btn = document.getElementById("btn-signup-toggle");
+    btn.innerText = "위 정보로 가입하기";
+    btn.style.backgroundColor = "#2e7d32";
+    btn.onclick = signup;
+}
+
+function signup() {
+    const id = document.getElementById("user-id").value;
+    const pw = document.getElementById("user-pw").value;
+    const name = document.getElementById("user-name").value;
+    const birth = document.getElementById("user-birth").value;
+    if (!id || !pw || !name || !birth) return alert("모든 빈칸을 채워주세요.");
+    fetch(`${BASE_URL}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, password: pw, name, birth })
+    }).then(async res => {
+        alert(await res.text());
+        if (res.ok) location.reload();
+    });
+}
+
+function findAccount() {
+    const name = document.getElementById("find-name").value;
+    const birth = document.getElementById("find-birth").value;
+    fetch(`${BASE_URL}/find-account`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, birth })
+    }).then(async res => alert(await res.text()));
+}
+
+function showFindModal() { document.getElementById("find-modal").style.display = "block"; }
+function closeFindModal() { document.getElementById("find-modal").style.display = "none"; }
 function goHome() { location.reload(); }
+function showMyInfo() { alert("내 가입 번호: " + localStorage.getItem("userId")); }
+function checkMyReserve() { 
+    const resDiv = document.getElementById("result");
+    if(resDiv.style.display === "none") alert("아직 예약 내역이 없습니다.");
+    else resDiv.scrollIntoView({ behavior: 'smooth' });
+}
