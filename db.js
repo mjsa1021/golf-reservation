@@ -1,5 +1,6 @@
 const mysql = require('mysql2');
 const fs = require('fs');
+const path = require('path'); // 파일 경로를 안전하게 잡기 위해 추가
 
 // TiDB Cloud 연결 설정
 const connection = mysql.createConnection({
@@ -9,8 +10,8 @@ const connection = mysql.createConnection({
   password: 'IiG11wQvFcuACtTh',
   database: 'test',
   ssl: {
-    // 본인 컴퓨터의 인증서 경로로 수정하세요!
-    ca: fs.readFileSync('D:/DB/isrgrootx1.pem'), 
+    // 현재 파일(db.js) 위치를 기준으로 같은 폴더에 있는 인증서를 읽어옵니다.
+    ca: fs.readFileSync(path.join(__dirname, 'isrgrootx1.pem')), 
     rejectUnauthorized: true
   }
 });
