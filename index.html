@@ -21,6 +21,8 @@
         .day-label { font-weight: bold; padding: 10px; color: #666; font-size: 1.2rem; text-align: center; }
         .day { padding: 25px 10px; border-radius: 10px; cursor: pointer; font-size: 1.6rem; font-weight: bold; border: 2px solid #eee; text-align: center; }
         .day.selected { background-color: #2e7d32; color: white; border-color: #1b5e20; }
+        .day.disabled { color: #ccc; cursor: not-allowed; }
+        .day.today { border: 2px solid #2e7d32; color: #2e7d32; }
         .time-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .time-btn { padding: 15px 10px; font-size: 1.4rem; border: 3px solid #ddd; border-radius: 12px; background: white; cursor: pointer; font-weight: bold; }
         .time-btn.active { background-color: #2e7d32; color: white; border-color: #1b5e20; }
@@ -50,12 +52,14 @@
                 <input type="text" id="user-id" placeholder="01012345678">
                 <label class="big-label">비밀번호</label>
                 <input type="password" id="user-pw" placeholder="비밀번호 입력">
+                
                 <div id="signup-extra" style="display: none;">
                     <label class="big-label">성함</label>
                     <input type="text" id="user-name">
                     <label class="big-label">연락처</label>
                     <input type="text" id="user-tel" placeholder="010-1234-5678">
                 </div>
+
                 <div style="margin-top: 30px;">
                     <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-join">처음 오셨나요? (회원가입)</button>
                     <button onclick="handleAuth()" id="btn-auth-main" class="btn-login" style="margin-top: 10px;">로그인 하기</button>
@@ -112,7 +116,9 @@
     </main>
 
     <script>
+        // Supabase 설정
         const _supabase = supabase.createClient('https://cxihknkegqjllaetliui.supabase.co', 'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK');
+        
         let isSignupMode = false;
         let selDate = "";
         let selTime = "";
@@ -124,6 +130,49 @@
             if (memNo && memName) { showReserveSection(memName); }
         };
 
+        /* --- 인증 로직 --- */
+        function toggleSignup() {
+            isSignupMode = !isSignupMode;
+            document.getElementById('signup-extra').style.display = isSignupMode ? 'block' : 'none';
+            document.getElementById('btn-auth-main').innerText = isSignupMode ? '가입 완료하기' : '로그인 하기';
+            document.getElementById('btn-signup-toggle').innerText = isSignupMode ? '취소하고 로그인으로' : '처음 오셨나요? (회원가입)';
+        }
+
+        async function handleAuth() {
+            const id = document.getElementById('user-id').value.trim();
+            const pw = document.getElementById('user-pw').value.trim();
+
+            if (!id || !pw) return alert("아이디와 비밀번호를 입력해주세요.");
+
+            if (isSignupMode) {
+                const name = document.getElementById('user-name').value.trim();
+                const tel = document.getElementById('user-tel').value.trim();
+                if (!name || !tel) return alert("성함과 연락처를 모두 입력해주세요.");
+
+                const { data, error } = await _supabase.from('member').insert([{ 
+                    mem_id: id, mem_pw: pw, mem_name: name, mem_tel: tel 
+                }]);
+
+                if (error) {
+                    alert("가입 실패: 이미 등록된 번호이거나 오류가 발생했습니다.");
+                } else {
+                    alert("회원가입 성공! 로그인 해주세요.");
+                    location.reload();
+                }
+            } else {
+                const { data, error } = await _supabase.from('member')
+                    .select('*').eq('mem_id', id).eq('mem_pw', pw).single();
+                
+                if (data) {
+                    localStorage.setItem('mem_no', data.mem_no);
+                    localStorage.setItem('mem_name', data.mem_name);
+                    showReserveSection(data.mem_name);
+                } else {
+                    alert("아이디 또는 비밀번호가 틀립니다.");
+                }
+            }
+        }
+
         function showReserveSection(name) {
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('reserve-section').style.display = 'block';
@@ -133,6 +182,12 @@
             fetchMyReservations();
         }
 
+        function handleLogout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        /* --- 예약 내역 조회 및 취소 --- */
         async function fetchMyReservations() {
             const memNo = localStorage.getItem('mem_no');
             const { data, error } = await _supabase
@@ -150,7 +205,7 @@
                 <div class="res-item">
                     <div class="res-info">
                         <strong>${res.res_date}</strong> (${res.res_time.substring(0,5)})<br>
-                        <span style="color:#666; font-size:0.9rem;">${res.course.course_name}</span>
+                        <span style="color:#666; font-size:0.9rem;">${res.course ? res.course.course_name : '구장 정보 없음'}</span>
                     </div>
                     <button class="btn-cancel" onclick="cancelReservation(${res.res_no})">취소</button>
                 </div>
@@ -164,59 +219,36 @@
             else { alert("취소되었습니다."); fetchMyReservations(); }
         }
 
-        function handleLogout() {
-            localStorage.clear();
-            location.reload();
-        }
-
-        function toggleSignup() {
-            isSignupMode = !isSignupMode;
-            document.getElementById('signup-extra').style.display = isSignupMode ? 'block' : 'none';
-            document.getElementById('btn-auth-main').innerText = isSignupMode ? '가입 완료하기' : '로그인 하기';
-        }
-
-        async function handleAuth() {
-            const id = document.getElementById('user-id').value;
-            const pw = document.getElementById('user-pw').value;
-
-            if (isSignupMode) {
-                const name = document.getElementById('user-name').value;
-                const tel = document.getElementById('user-tel').value;
-                const { data, error } = await _supabase.from('member').insert([{ 
-                    mem_id: id, mem_pw: pw, mem_name: name, mem_tel: tel 
-                }]).select();
-                if (error) alert("가입 실패: 이미 있는 아이디일 수 있습니다.");
-                else { alert("가입 성공! 로그인 해주세요."); location.reload(); }
-            } else {
-                const { data, error } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
-                if (data) {
-                    localStorage.setItem('mem_no', data.mem_no);
-                    localStorage.setItem('mem_name', data.mem_name);
-                    showReserveSection(data.mem_name);
-                } else { alert("아이디 또는 비밀번호가 틀립니다."); }
-            }
-        }
-
+        /* --- 달력 및 단계 이동 --- */
         function initCalendar() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
             document.getElementById('current-month-display').innerText = `${year}년 ${month + 1}월`;
+            
             ['일','월','화','수','목','금','토'].forEach(d => {
                 const el = document.createElement('div'); el.className = 'day-label'; el.innerText = d; grid.appendChild(el);
             });
+
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
+            const today = new Date(); today.setHours(0,0,0,0);
+
             for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
             for(let i=1; i<=lastDate; i++) {
+                const dateObj = new Date(year, month, i);
                 const d = document.createElement('div');
                 d.className = 'day'; d.innerText = i;
-                d.onclick = () => {
-                    document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
-                    d.classList.add('selected');
-                    selDate = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                };
+                if(dateObj < today) d.classList.add('disabled');
+                else {
+                    if(dateObj.getTime() === today.getTime()) d.classList.add('today');
+                    d.onclick = () => {
+                        document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
+                        d.classList.add('selected');
+                        selDate = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                    };
+                }
                 grid.appendChild(d);
             }
         }
@@ -243,16 +275,17 @@
         async function reserve() {
             const memNo = localStorage.getItem('mem_no');
             const courseNo = document.getElementById('course_no').value;
-            
-            // 중복 예약 확인
+
+            // 중복 확인
             const { data: existing } = await _supabase.from('reservation').select('*').eq('res_date', selDate).eq('res_time', selTime).eq('course_no', courseNo);
-            if (existing && existing.length > 0) { alert("해당 시간은 이미 예약이 찼습니다."); return; }
+            if (existing && existing.length > 0) return alert("해당 시간은 이미 예약이 찼습니다.");
 
             const { error } = await _supabase.from('reservation').insert([{
                 mem_no: memNo, course_no: courseNo, res_date: selDate, res_time: selTime
             }]);
+
             if (error) alert("예약 실패: " + error.message);
-            else { alert("예약이 완료되었습니다"); location.reload(); }
+            else { alert("예약이 완료되었습니다!"); location.reload(); }
         }
     </script>
 </body>
