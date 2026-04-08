@@ -1,4 +1,3 @@
-// 1. Supabase 초기 설정
 const _supabase = supabase.createClient(
     'https://cxihknkegqjllaetliui.supabase.co', 
     'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK'
@@ -9,7 +8,6 @@ let selDate = "";
 let selTime = "";
 let currentMonth = new Date();
 
-// 2. 초기화 및 세션 유지
 window.onload = function() {
     const savedNo = localStorage.getItem('m_no');
     const savedName = localStorage.getItem('uname');
@@ -18,7 +16,7 @@ window.onload = function() {
     }
 };
 
-// 3. 섹션 제어 함수
+
 function showSection(id) {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -36,10 +34,10 @@ function showInfo(type) {
     const body = document.getElementById('info-body');
     
     if(type === 'notice') {
-        title.innerText = "📢 센터 공지사항";
+        title.innerText = "공지사항";
         body.innerHTML = "• 매주 월요일은 정기 점검일로 휴장합니다.<br>• 경산 시민은 현장에서 신분증 확인 시 우대 혜택이 있습니다.";
     } else {
-        title.innerText = "📋 자유 게시판";
+        title.innerText = "자유 게시판";
         body.innerHTML = "사용자 간의 소통을 위한 게시판 서비스 준비 중입니다.";
     }
 }
@@ -185,7 +183,7 @@ async function reserve() {
     }]);
 
     if (error) alert("서버 오류로 예약에 실패했습니다.");
-    else { alert("예약이 완료되었습니다!"); location.reload(); }
+    else { alert("예약이 완료되었습니다."); location.reload(); }
 }
 
 async function fetchMyReservations() {
