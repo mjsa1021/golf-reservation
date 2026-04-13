@@ -68,9 +68,9 @@
             </div>
 
             <div class="grid-menu">
-                <div class="menu-card" onclick="showSection('info-notice')">📢<span>공지사항</span></div>
-                <div class="menu-card" onclick="showSection('info-guide')">📖<span>이용방법</span></div>
-                <div class="menu-card" onclick="showSection('map-section')">📍<span>구장찾기</span></div>
+                <div class="menu-card" onclick="showSection('info-notice')"><span>공지사항</span></div>
+                <div class="menu-card" onclick="showSection('info-guide')"><span>이용방법</span></div>
+                <div class="menu-card" onclick="showSection('map-section')"><span>구장찾기</span></div>
             </div>
         </div>
 
@@ -90,7 +90,7 @@
 
         <div id="map-section" class="section">
             <div class="content-card">
-                <h2 style="margin-top:0;">📍 구장 위치 및 길찾기</h2>
+                <h2 style="margin-top:0;">구장 위치 및 길찾기</h2>
                 <div style="width:100%; height:200px; background:#e0e0e0; border-radius:15px; margin-bottom:20px; display:flex; align-items:center; justify-content:center; color:#666; font-weight:bold;">
                     [ 지도 API 연동 영역 ]
                 </div>
@@ -108,7 +108,7 @@
 
         <div id="info-notice" class="section">
             <div class="content-card">
-                <h2 style="color:var(--primary)">📢 공지사항</h2>
+                <h2 style="color:var(--primary)">공지사항</h2>
                 <hr border="0" height="1px" background="#eee">
                 <p>• 2026년 4월 잔디 생육기 보호를 위한 일부 구장 휴장 안내</p>
                 <p>• 예약 취소는 방문 1일 전까지만 가능합니다.</p>
@@ -118,7 +118,7 @@
 
         <div id="reserve-section" class="section">
             <div class="content-card">
-                <h2 style="margin-top:0;">🗓️ 날짜 선택</h2>
+                <h2 style="margin-top:0;">날짜 선택</h2>
                 <div class="calendar-grid" id="calendar-grid"></div>
                 <button onclick="reserve()" class="btn-primary">이 날짜로 예약 확정</button>
                 <div style="margin-top:30px;">
@@ -213,7 +213,7 @@
 
         async function fetchRes() {
             const { data } = await _supabase.from('reservation').select('*').eq('mem_no', localStorage.getItem('mem_no'));
-            if(data) document.getElementById('my-res-list').innerHTML = data.map(r => `<div>✅ ${r.res_date} 예약 완료</div>`).join('');
+            if(data) document.getElementById('my-res-list').innerHTML = data.map(r => `<div>${r.res_date} 예약 완료</div>`).join('');
         }
     </script>
 </body>
