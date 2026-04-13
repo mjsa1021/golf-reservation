@@ -9,45 +9,20 @@
     <style>
         :root { --primary: #2e7d32; --accent: #ffa000; --bg: #f8f9fa; }
         body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #333; }
-        
-        /* 헤더 스타일 */
         .header { background: #fff; border-bottom: 1px solid #ddd; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 1.2rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .user-info { font-size: 0.9rem; font-weight: bold; }
-
         .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-
-        /* 메인 대시보드 UI */
-        .main-banner { background: var(--primary); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; position: relative; }
-        .main-banner h1 { margin: 0; font-size: 1.5rem; line-height: 1.4; }
-        .main-banner p { opacity: 0.9; margin: 10px 0 20px; }
-        .btn-reserve-main { background: #fff; color: var(--primary); border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-
+        .main-banner { background: var(--primary); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
+        .btn-reserve-main { background: #fff; color: var(--primary); border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .grid-menu { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-        .menu-card { background: #fff; padding: 25px 15px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; border: 1px solid #eee; }
-        .menu-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .menu-card i { display: block; font-size: 1.8rem; margin-bottom: 12px; }
-        .menu-card span { font-weight: bold; font-size: 0.95rem; }
-
-        /* 섹션 제어 */
+        .menu-card { background: #fff; padding: 25px 15px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid #eee; }
         .section { display: none; }
         .active { display: block; }
-
         .content-card { background: #fff; border-radius: 20px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        
-        /* 지도 리스트 */
-        .map-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
-        .btn-map { background: #e3f2fd; color: #1976d2; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
-        /* 입력 및 버튼 */
-        input { width: 100%; padding: 15px; margin-top: 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
-        .btn-primary { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn-secondary { width: 100%; padding: 15px; background: #fff; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-
-        /* 달력 */
+        input { width: 100%; padding: 15px; margin-top: 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .btn-primary { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 20px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
-        .day { padding: 15px 5px; text-align: center; background: #f9f9f9; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid transparent; }
-        .day:hover { border-color: var(--primary); }
+        .day { padding: 15px 5px; text-align: center; background: #f9f9f9; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .day.selected { background: var(--primary); color: white; }
     </style>
 </head>
@@ -56,156 +31,99 @@
     <header class="header">
         <div class="logo" onclick="goHome()">⛳ 경산시 파크골프</div>
         <div id="auth-status" class="user-info">
-            <button onclick="showSection('auth-section')" style="border:none; background:none; font-weight:bold; cursor:pointer; color:var(--primary);">로그인</button>
+            <button onclick="showSection('auth-section')" style="border:none; background:none; font-weight:bold; cursor:pointer;">로그인</button>
         </div>
     </header>
 
     <div class="container">
-        
         <div id="main-section" class="section active">
             <div class="main-banner">
-                <h1>경산시 파크골프장<br>실시간 온라인 예약</h1>
-                <p>편리하게 구장을 찾고 예약하세요.</p>
+                <h1>경산시 파크골프장<br>온라인 예약</h1>
+                <p>간편하게 예약하고 이용하세요.</p>
                 <button class="btn-reserve-main" onclick="checkLoginForReserve()">지금 예약하기 →</button>
             </div>
-
             <div class="grid-menu">
-                <div class="menu-card" onclick="showSection('info-notice')">
-                    <i class="fas fa-bullhorn" style="color:#e91e63;"></i><span>공지사항</span>
-                </div>
-                <div class="menu-card" onclick="showSection('info-guide')">
-                    <i class="fas fa-book-open" style="color:#2196f3;"></i><span>이용방법</span>
-                </div>
-                <div class="menu-card" onclick="showSection('map-section')">
-                    <i class="fas fa-map-marked-alt" style="color:#4caf50;"></i><span>구장찾기</span>
-                </div>
+                <div class="menu-card" onclick="showSection('info-notice')"><i class="fas fa-bullhorn"></i><span>공지사항</span></div>
+                <div class="menu-card" onclick="showSection('map-section')"><i class="fas fa-map-marked-alt"></i><span>구장찾기</span></div>
+                <div class="menu-card" onclick="showSection('reserve-section')"><i class="fas fa-calendar-check"></i><span>예약확인</span></div>
             </div>
         </div>
 
         <div id="auth-section" class="section">
             <div class="content-card">
-                <h2 id="auth-title" style="margin-top:0; text-align:center;">로그인</h2>
-                <input type="text" id="user-id" placeholder="휴대폰 번호 (아이디)">
+                <h2 id="auth-title">로그인</h2>
+                <input type="text" id="user-id" placeholder="휴대폰 번호">
                 <input type="password" id="user-pw" placeholder="비밀번호">
                 <div id="signup-extra" style="display:none;">
                     <input type="text" id="user-name" placeholder="성함">
-                    <input type="text" id="user-tel" placeholder="연락처 (010-0000-0000)">
+                    <input type="text" id="user-tel" placeholder="연락처">
                 </div>
                 <button onclick="handleAuth()" id="btn-auth-main" class="btn-primary">로그인 하기</button>
-                <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-secondary">회원가입 하러가기</button>
-            </div>
-        </div>
-
-        <div id="map-section" class="section">
-            <div class="content-card">
-                <h2 style="margin-top:0;">📍 구장 위치 및 길찾기</h2>
-                <div style="width:100%; height:200px; background:#e0e0e0; border-radius:15px; margin-bottom:20px; display:flex; align-items:center; justify-content:center; color:#666; font-weight:bold; border: 1px solid #ddd;">
-                    <i class="fas fa-map-pin" style="margin-right:8px;"></i> 지도 준비 중
-                </div>
-                <div class="map-item">
-                    <div><b>경산 파크골프장</b><br><small>경상북도 경산시 남천면</small></div>
-                    <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/경산+파크골프장')">길찾기</button>
-                </div>
-                <div class="map-item">
-                    <div><b>하양 파크골프장</b><br><small>경상북도 경산시 하양읍</small></div>
-                    <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/하양+파크골프장')">길찾기</button>
-                </div>
-                <button onclick="goHome()" class="btn-secondary">홈으로 돌아가기</button>
-            </div>
-        </div>
-
-        <div id="info-notice" class="section">
-            <div class="content-card">
-                <h2 style="color:var(--primary)">📢 공지사항</h2>
-                <hr style="border:0; height:1px; background:#eee; margin: 15px 0;">
-                <p>• 2026년 4월 잔디 보호 기간으로 일부 코스가 제한될 수 있습니다.</p>
-                <p>• 예약 후 미방문 시 향후 이용에 제한이 있을 수 있습니다.</p>
-                <button onclick="goHome()" class="btn-primary">확인했습니다</button>
+                <button onclick="toggleSignup()" class="btn-primary" style="background:#666;">회원가입 전환</button>
             </div>
         </div>
 
         <div id="reserve-section" class="section">
             <div class="content-card">
-                <h2 style="margin-top:0;">🗓️ 예약 날짜 선택</h2>
+                <h2>날짜 선택</h2>
                 <div class="calendar-grid" id="calendar-grid"></div>
-                <button onclick="reserve()" class="btn-primary">이 날짜로 예약하기</button>
-                <div style="margin-top:30px; border-top: 1px solid #eee; padding-top: 20px;">
-                    <h3 style="font-size: 1.1rem;">📋 나의 최근 예약</h3>
-                    <div id="my-res-list" style="font-size:0.95rem; color:#666;">내역을 불러오는 중...</div>
+                <button onclick="reserve()" class="btn-primary">예약 확정</button>
+                <div style="margin-top:20px;">
+                    <h3>내 예약 내역</h3>
+                    <div id="my-res-list">내역이 없습니다.</div>
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
-        // Supabase 초기화
         const _supabase = supabase.createClient('https://cxihknkegqjllaetliui.supabase.co', 'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK');
-        
         let isSignupMode = false;
         let selDate = "";
 
-        window.onload = () => {
-            const user = localStorage.getItem('mem_name');
-            if(user) loginUI(user);
-        };
+        window.onload = () => { if(localStorage.getItem('mem_name')) loginUI(localStorage.getItem('mem_name')); };
 
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            window.scrollTo(0,0);
         }
-
         function goHome() { showSection('main-section'); }
 
         function toggleSignup() {
             isSignupMode = !isSignupMode;
             document.getElementById('auth-title').innerText = isSignupMode ? "회원가입" : "로그인";
             document.getElementById('signup-extra').style.display = isSignupMode ? "block" : "none";
-            document.getElementById('btn-auth-main').innerText = isSignupMode ? "가입 완료" : "로그인 하기";
         }
 
-        // 인증 로직 (로그인/회원가입)
         async function handleAuth() {
             const id = document.getElementById('user-id').value;
             const pw = document.getElementById('user-pw').value;
-
             if(isSignupMode) {
                 const name = document.getElementById('user-name').value;
                 const tel = document.getElementById('user-tel').value;
                 const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name, mem_tel: tel }]);
-                if(error) alert("가입 실패: " + error.message); 
-                else { alert("가입을 환영합니다! 로그인 해주세요."); location.reload(); }
+                if(error) alert("실패: " + error.message); else location.reload();
             } else {
-                const { data, error } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
+                const { data } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
                 if(data) {
                     localStorage.setItem('mem_no', data.mem_no);
                     localStorage.setItem('mem_name', data.mem_name);
                     loginUI(data.mem_name);
-                } else {
-                    alert("로그인 정보가 올바르지 않습니다.");
-                }
+                } else alert("로그인 실패");
             }
         }
 
         function loginUI(name) {
-            document.getElementById('auth-status').innerHTML = `<i class="fas fa-user-circle"></i> ${name}님 | <span onclick="logout()" style="cursor:pointer; color:#f44336; margin-left:5px;">로그아웃</span>`;
-            goHome();
+            document.getElementById('auth-status').innerHTML = `${name}님 | <span onclick="localStorage.clear();location.reload();">로그아웃</span>`;
             initCalendar();
             fetchRes();
-        }
-
-        function logout() { localStorage.clear(); location.reload(); }
-
-        function checkLoginForReserve() {
-            if(localStorage.getItem('mem_no')) showSection('reserve-section');
-            else { alert("예약은 로그인이 필요합니다."); showSection('auth-section'); }
+            goHome();
         }
 
         function initCalendar() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
-            for(let i=1; i<=30; i++) {
+            for(let i=1; i<=28; i++) {
                 const d = document.createElement('div');
                 d.className = 'day'; d.innerText = i;
                 d.onclick = () => {
@@ -217,42 +135,30 @@
             }
         }
 
-        // 예약 로직 (디버깅 기능 강화)
+        // [핵심 수정 부분] SQL 스키마에 맞춰 course_no -> court_name으로 변경
         async function reserve() {
-            if(!selDate) return alert("날짜를 먼저 선택해 주세요.");
-            
+            if(!selDate) return alert("날짜 선택!");
             const memNo = localStorage.getItem('mem_no');
             
-            // [중요] DB에 course_no 1번 데이터가 반드시 존재해야 합니다.
             const { error } = await _supabase.from('reservation').insert([{ 
                 mem_no: parseInt(memNo), 
                 res_date: selDate, 
-                course_no: 1, 
+                court_name: '경산 파크골프장', // 이 부분이 SQL 스키마와 일치해야 함
                 res_time: '09:00:00' 
             }]);
 
-            if(error) {
-                console.error("상세 에러 내용:", error);
-                alert("예약 실패 사유: " + error.message);
-            } else {
-                alert("축하합니다! 예약이 정상적으로 완료되었습니다."); 
-                fetchRes(); 
-            }
+            if(error) alert("실패: " + error.message);
+            else { alert("완료!"); fetchRes(); }
         }
 
         async function fetchRes() {
-            const memNo = localStorage.getItem('mem_no');
-            const { data, error } = await _supabase.from('reservation').select('*').eq('mem_no', memNo).order('res_date', { ascending: false });
-            
-            const listDiv = document.getElementById('my-res-list');
-            if(data && data.length > 0) {
-                listDiv.innerHTML = data.map(r => `
-                    <div style="padding:10px 0; border-bottom:1px dashed #eee;">
-                        <i class="far fa-check-circle" style="color:var(--primary)"></i> ${r.res_date} (09:00)
-                    </div>`).join('');
-            } else {
-                listDiv.innerText = "아직 예약 내역이 없습니다.";
-            }
+            const { data } = await _supabase.from('reservation').select('*').eq('mem_no', localStorage.getItem('mem_no'));
+            if(data) document.getElementById('my-res-list').innerHTML = data.map(r => `<div>${r.res_date} 예약됨</div>`).join('');
+        }
+
+        function checkLoginForReserve() {
+            if(localStorage.getItem('mem_no')) showSection('reserve-section');
+            else { alert("로그인 필요"); showSection('auth-section'); }
         }
     </script>
 </body>
