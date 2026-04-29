@@ -1,0 +1,104 @@
+ALTER TABLE users ADD COLUMN last_login_to
+UPDATE users SET last_login_token = 'new_session_uuid' WHERE id = '01012345678';CREATE TABLE IF NOT EXISTS courts (
+    court_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE, -- 구장 이름 (중복 금지)
+    max_slots INT DEFAULT 4,          -- 한 타임당 최대 예약 가능 팀 수
+    description TEXT
+);
+
+INSERT IGNORE INTO courts (name, max_slots, description) VALUES 
+('가산 파크골프장 A코스', 4, '평지가 많아 초보자에게 좋습니다.'),
+('가산 파크골프장 B코스', 2, '장애물이 있어 난이도가 있습니다.');
+
+
+ALTER TABLE reservations 
+ADD UNIQUE KEY unique_user_time (user_id, res_date, res_time);CREATE DATABASE IF NOT EXISTS golf_db;
+USE golf_db;
+
+SELECT COUNT(*) as current_count 
+FROM reservations 
+WHERE court_name = '가산 파크골프장 A코스' 
+  AND res_date = '2026-04-10' 
+  AND res_time = '14:00' 
+  AND status != 'cancelled';-- 로그인 성공 시 고유한 토큰(UUID 등)을 저장
+UPDATE users SET last_login_token = 'new_session_uuid' WHERE id = '01012345678';ALTER TABLE users DROP COLUMN IF EXISTS last_login_token;ALTER TABLE users ADD COLUMN last_login_token VARCHAR(255);CREATE TABLE reservations (
+    res_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_name VARCHAR(50),
+    res_date DATE,
+    -- QR 스캔 시 대조할 고유 토큰 (중복 방지를 위해 UNIQUE 설정)
+    qr_token VARCHAR(255) UNIQUE, 
+    status ENUM('pending', 'confirmed', 'used') DEFAULT 'pending'
+);
+-- 2. 예약 테이블 생성
+CREATE TABLE IF NOT EXISTS reservations (
+    res_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '예약 고유번호',
+    user_id VARCHAR(50) NOT NULL COMMENT '사용자 아이디(전화번호)',
+    res_date DATE NOT NULL COMMENT '예약 날짜',
+    res_time TIME NOT NULL COMMENT '예약 시간',
+    court_name VARCHAR(50) NOT NULL COMMENT '코스 이름',
+    people_count INT DEFAULT 1 COMMENT '인원 수',
+    qr_token VARCHAR(255) UNIQUE NOT NULL COMMENT 'QR코드 검증용 고유 토큰',
+    status ENUM('pending', 'used', 'cancelled') DEFAULT 'pending' COMMENT '예약 상태',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '예약 생성일'
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id VARCHAR(50) PRIMARY KEY COMMENT '휴대폰 번호',
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    birth VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);CREATE TABLE reservations (
+    res_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_name VARCHAR(50),
+    res_date DATE,
+    )
+    qr_token VARCHAR(255) UNIQUE, 
+    status ENUM('pending', 'confirmed', 'used') DEFAULT 'pending'
+);CREATE INDEX idx_res_date_time ON reservations (res_date, res_time);CREATE TABLE IF NOT EXISTS courts (
+    court_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE, -- 구장 이름 (중복 금지)
+    max_slots INT DEFAULT 4,          -- 한 타임당 최대 예약 가능 팀 수
+    description TEXT
+);
+
+-- 초기 구장 데이터 삽입 (예시)
+INSERT IGNORE INTO courts (name, max_slots, description) VALUES 
+('가산 파크골프장 A코스', 4, '평지가 많아 초보자에게 좋습니다.'),
+('가산 파크골프장 B코스', 2, '장애물이 있어 난이도가 있습니다.');
+
+
+ALTER TABLE reservations 
+ADD UNIQUE KEY unique_user_time (user_id, res_date, res_time);CREATE TABLE IF NOT EXISTS courts (
+    court_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE, -- 구장 이름 (중복 금지)
+    max_slots INT DEFAULT 4,          -- 한 타임당 최대 예약 가능 팀 수
+    description TEXT
+);
+
+
+INSERT IGNORE INTO courts (name, max_slots, description) VALUES 
+('가산 파크골프장 A코스', 4, '평지가 많아 초보자에게 좋습니다.'),
+('가산 파크골프장 B코스', 2, '장애물이 있어 난이도가 있습니다.');
+
+
+ALTER TABLE reservations 
+ADD UNIQUE KEY unique_user_time (user_id, res_date, res_time);
+SELECT COUNT(*) as current_count 
+FROM reservations 
+WHERE court_name = '가산 파크골프장 A코스' 
+  AND res_date = '2026-04-10' 
+  AND res_time = '14:00' 
+  AND status != 'cancelled';CREATE TABLE IF NOT EXISTS courts (
+    court_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE, 
+    max_slots INT DEFAULT 4,          
+    description TEXT
+);
+
+INSERT IGNORE INTO courts (name, max_slots, description) VALUES 
+('가산 파크골프장 A코스', 4, '평지가 많아 초보자에게 좋습니다.'),
+('가산 파크골프장 B코스', 2, '장애물이 있어 난이도가 있습니다.');
+
+ALTER TABLE reservations 
+ADD UNIQUE KEY unique_user_time (user_id, res_date, res_time);ken VARCHAR(255);
