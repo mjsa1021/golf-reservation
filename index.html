@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경산시 파크골프 예약 시스템</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #2e7d32; --accent: #ffa000; --bg: #f8f9fa; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #333; }
+        .header { background: #fff; border-bottom: 1px solid #ddd; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.2rem; font-weight: bold; color: var(--primary); cursor: pointer; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { display: none; }
+        .active { display: block; }
+        .content-card { background: #fff; border-radius: 20px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        
+        .main-banner { background: var(--primary); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
+        .btn-reserve-main { background: #fff; color: var(--primary); border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        
+        select, input { width: 100%; padding: 12px; margin-top: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; box-sizing: border-box; }
+        .btn-primary { width: 100%; padding: 15px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn-secondary { width: 100%; padding: 15px; background: #fff; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 15px; }
+        .day { padding: 10px; text-align: center; background: #f9f9f9; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .day.selected { background: var(--primary); color: white; }
+        
+        .time-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
+        .time-btn { padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; text-align: center; font-weight: bold; font-size: 0.9rem; }
+        .time-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .res-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #eee; }
+        .btn-cancel { background: #ff5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo" onclick="goHome()">⛳ 경산시 파크골프</div>
+        <div id="auth-status">
+            <button onclick="showSection('auth-section')" style="border:none; background:none; font-weight:bold; cursor:pointer;">로그인</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="main-section" class="section active">
+            <div class="main-banner">
+                <h1>경산시 파크골프장<br>온라인 예약 시스템</h1>
+                <p>원하는 날짜와 시간을 선택해 예약하세요.</p>
+                <button class="btn-reserve-main" onclick="checkLoginForReserve()">지금 예약하기 →</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div class="content-card" style="text-align: center; cursor: pointer;" onclick="showSection('info-notice')">공지사항</div>
+                <div class="content-card" style="text-align: center; cursor: pointer;" onclick="showSection('map-section')">구장찾기</div>
+                <div class="content-card" style="text-align: center; cursor: pointer;" onclick="alert('준비 중입니다.')">이용가이드</div>
+            </div>
+        </div>
+
+        <div id="auth-section" class="section">
+            <div class="content-card">
+                <h2 id="auth-title" style="text-align:center;">로그인</h2>
+                <input type="text" id="user-id" placeholder="휴대폰 번호 (아이디)">
+                <input type="password" id="user-pw" placeholder="비밀번호">
+                <div id="signup-extra" style="display:none;">
+                    <input type="text" id="user-name" placeholder="성함">
+                </div>
+                <button onclick="handleAuth()" id="btn-auth-main" class="btn-primary">로그인 하기</button>
+                <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-secondary">회원가입 전환</button>
+            </div>
+        </div>
+
+        <div id="reserve-section" class="section">
+            <div class="content-card">
+                <h3>1. 날짜 선택</h3>
+                <div class="calendar-grid" id="calendar-grid"></div>
+
+                <h3 style="margin-top:25px;">2. 시간 선택</h3>
+                <div class="time-slots" id="time-slots">
+                    <div class="time-btn" onclick="selectTime('09:00')">09:00</div>
+                    <div class="time-btn" onclick="selectTime('15:00')">15:00</div>
+                </div>
+
+                <h3 style="margin-top:25px;">3. 인원 선택</h3>
+                <select id="res-people">
+                    <option value="1">1명</option>
+                    <option value="2">2명</option>
+                    <option value="3">3명</option>
+                    <option value="4">4명 (최대)</option>
+                </select>
+
+                <button onclick="reserve()" class="btn-primary">예약 확정하기</button>
+            </div>
+
+            <div class="content-card">
+                <h3>나의 예약 현황</h3>
+                <div id="my-res-list">내역을 불러오는 중...</div>
+            </div>
+        </div>
+
+        <div id="map-section" class="section">
+            <div class="content-card">
+                <h2>구장 위치</h2>
+                <div class="res-item">
+                    <div><b>경산 파크골프장</b><br><small>경상북도 경산시 남천면</small></div>
+                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://maps.google.com/?q=경산파크골프장')">길찾기</button>
+                </div>
+                <button onclick="goHome()" class="btn-secondary">홈으로</button>
+            </div>
+        </div>
+
+        <div id="info-notice" class="section">
+            <div class="content-card">
+                <h2>공지사항</h2>
+                <p>준비중</p>
+                <p>준비중</p>
+                <button onclick="goHome()" class="btn-primary">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const _supabase = supabase.createClient('https://cxihknkegqjllaetliui.supabase.co', 'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK');
+        
+        let isSignupMode = false;
+        let selDate = "";
+        let selTime = "";
+
+        window.onload = () => {
+            const user = localStorage.getItem('mem_name');
+            if(user) loginUI(user);
+        };
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function goHome() { showSection('main-section'); }
+
+        function toggleSignup() {
+            isSignupMode = !isSignupMode;
+            document.getElementById('auth-title').innerText = isSignupMode ? "회원가입" : "로그인";
+            document.getElementById('signup-extra').style.display = isSignupMode ? "block" : "none";
+            document.getElementById('btn-auth-main').innerText = isSignupMode ? "가입 완료" : "로그인 하기";
+        }
+
+        function selectTime(time) {
+            selTime = time;
+            document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        async function handleAuth() {
+            const id = document.getElementById('user-id').value;
+            const pw = document.getElementById('user-pw').value;
+            if(isSignupMode) {
+                const name = document.getElementById('user-name').value;
+                const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name }]);
+                if(error) alert("실패"); else { alert("성공!"); location.reload(); }
+            } else {
+                const { data } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
+                if(data) {
+                    localStorage.setItem('mem_no', data.mem_no);
+                    localStorage.setItem('mem_name', data.mem_name);
+                    loginUI(data.mem_name);
+                } else alert("정보를 확인하세요.");
+            }
+        }
+
+        function loginUI(name) {
+            document.getElementById('auth-status').innerHTML = `${name}님 | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
+            initCalendar();
+            fetchRes();
+            goHome();
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
+
+        function checkLoginForReserve() {
+            if(localStorage.getItem('mem_no')) showSection('reserve-section');
+            else { alert("로그인이 필요합니다."); showSection('auth-section'); }
+        }
+
+        function initCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            for(let i=1; i<=28; i++) {
+                const d = document.createElement('div');
+                d.className = 'day'; d.innerText = i;
+                d.onclick = () => {
+                    document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
+                    d.classList.add('selected');
+                    selDate = `2026-04-${String(i).padStart(2,'0')}`;
+                };
+                grid.appendChild(d);
+            }
+        }
+
+        async function reserve() {
+            if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
+            const memNo = localStorage.getItem('mem_no');
+            const people = document.getElementById('res-people').value;
+
+            const { error } = await _supabase.from('reservation').insert([{ 
+                mem_no: parseInt(memNo), 
+                res_date: selDate, 
+                res_time: selTime,
+                court_name: '경산 파크골프장', 
+                status: `예약완료(${people}명)` 
+            }]);
+
+            if(error) alert("에러: " + error.message);
+            else { alert("예약이 확정되었습니다"); fetchRes(); }
+        }
+
+        async function fetchRes() {
+            const memNo = localStorage.getItem('mem_no');
+            const { data } = await _supabase.from('reservation').select('*').eq('mem_no', memNo).order('res_date', {ascending: true});
+            const listDiv = document.getElementById('my-res-list');
+            
+            if(data && data.length > 0) {
+                listDiv.innerHTML = data.map(r => `
+                    <div class="res-item">
+                        <div>
+                            <strong>${r.res_date}</strong> <span style="color:var(--primary)">${r.res_time}</span><br>
+                            <small>${r.court_name} / ${r.status}</small>
+                        </div>
+                        <button class="btn-cancel" onclick="cancelRes(${r.res_no})">취소</button>
+                    </div>`).join('');
+            } else {
+                listDiv.innerText = "예약 내역이 없습니다.";
+            }
+        }
+
+        async function cancelRes(resNo) {
+            if(!confirm("취소하시겠습니까?")) return;
+            const { error } = await _supabase.from('reservation').delete().eq('res_no', resNo);
+            if(error) alert("실패");
+            else { alert("취소 완료"); fetchRes(); }
+        }
+    </script>
+</body>
+</html>
