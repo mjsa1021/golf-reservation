@@ -72,6 +72,7 @@
                     <input type="text" id="user-name" placeholder="성함">
                 </div>
                 <button onclick="handleAuth()" id="btn-auth-main" class="btn-primary">로그인 하기</button>
+                <button onclick="findPassword()" class="btn-secondary">비밀번호 찾기</button>
                 <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-secondary">회원가입 전환</button>
             </div>
         </div>
@@ -202,6 +203,27 @@
                     loginUI(data.mem_name);
                 } else alert("정보를 확인하세요.");
             }
+        }
+
+        async function findPassword() {
+            const id = document.getElementById('user-id').value.trim();
+            if (!id) {
+                alert("아이디(전화번호)를 먼저 입력해주세요.");
+                return;
+            }
+
+            const { data, error } = await _supabase
+                .from('member')
+                .select('mem_pw')
+                .eq('mem_id', id)
+                .single();
+
+            if (error || !data) {
+                alert("해당 전화번호로 가입된 회원이 없습니다.");
+                return;
+            }
+
+            alert(`회원님의 비밀번호는 ${data.mem_pw} 입니다.`);
         }
 
         function loginUI(name) {
