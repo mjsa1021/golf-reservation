@@ -257,12 +257,32 @@
             if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
             const memNo = localStorage.getItem('mem_no');
             const people = document.getElementById('res-people').value;
+            const courtName = '경산 파크골프장';
+
+            // 다른 사용자가 이미 같은 날짜/시간(같은 구장) 예약했는지 확인
+            const { data: dupData, error: dupError } = await _supabase
+                .from('reservation')
+                .select('res_no')
+                .eq('res_date', selDate)
+                .eq('res_time', selTime)
+                .eq('court_name', courtName)
+                .limit(1);
+
+            if (dupError) {
+                alert("중복 예약 확인 중 오류가 발생했습니다.");
+                return;
+            }
+
+            if (dupData && dupData.length > 0) {
+                alert("이미 다른 사용자가 예약한 시간입니다. 다른 시간을 선택해주세요.");
+                return;
+            }
 
             const { error } = await _supabase.from('reservation').insert([{ 
                 mem_no: parseInt(memNo), 
                 res_date: selDate, 
                 res_time: selTime,
-                court_name: '경산 파크골프장', 
+                court_name: courtName, 
                 status: `예약완료(${people}명)` 
             }]);
 
