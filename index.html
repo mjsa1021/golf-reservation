@@ -24,8 +24,13 @@
         .btn-secondary { width: 100%; padding: 15px; background: #fff; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 15px; }
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+        .calendar-nav button { width: auto; padding: 8px 12px; font-size: 1rem; margin: 0; }
+        .calendar-title { font-weight: bold; color: #333; }
         .day { padding: 10px; text-align: center; background: #f9f9f9; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .day.selected { background: var(--primary); color: white; }
+        .day.disabled { background: #e0e0e0; color: #999; cursor: not-allowed; }
+        .day-label { text-align: center; font-weight: bold; color: #666; padding: 8px 0; }
         
         .time-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
         .time-btn { padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; text-align: center; font-weight: bold; font-size: 0.9rem; }
@@ -74,6 +79,14 @@
         <div id="reserve-section" class="section">
             <div class="content-card">
                 <h3>1. 날짜 선택</h3>
+                <div style="text-align: center; margin-bottom: 8px; font-size: 1.2rem; font-weight: bold;">
+                    <span id="current-date-display">0000년 0월 0일</span>
+                </div>
+                <div class="calendar-nav">
+                    <button class="btn-secondary" onclick="changeMonth(-1)">이전 달</button>
+                    <span id="current-month-display" class="calendar-title">0000년 0월</span>
+                    <button class="btn-secondary" onclick="changeMonth(1)">다음 달</button>
+                </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
 
                 <h3 style="margin-top:25px;">2. 시간 선택</h3>
@@ -126,6 +139,7 @@
         let isSignupMode = false;
         let selDate = "";
         let selTime = "";
+        let currentMonth = new Date();
 
         window.onload = () => {
             const user = localStorage.getItem('mem_name');
@@ -186,16 +200,57 @@
         function initCalendar() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
-            for(let i=1; i<=28; i++) {
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+
+            // 오늘 년/월/일 표시
+            document.getElementById('current-date-display').innerText = 
+                `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+            // 현재 보고 있는 년/월 표시
+            document.getElementById('current-month-display').innerText = `${year}년 ${month + 1}월`;
+
+            ['일', '월', '화', '수', '목', '금', '토'].forEach((dayName) => {
+                const label = document.createElement('div');
+                label.className = 'day-label';
+                label.innerText = dayName;
+                grid.appendChild(label);
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for(let i=1; i<=lastDay; i++) {
                 const d = document.createElement('div');
-                d.className = 'day'; d.innerText = i;
-                d.onclick = () => {
-                    document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
-                    d.classList.add('selected');
-                    selDate = `2026-04-${String(i).padStart(2,'0')}`;
-                };
+                d.className = 'day';
+                d.innerText = i;
+                
+                const currentDate = new Date(year, month, i);
+                
+                if(currentDate < today) {
+                    d.classList.add('disabled');
+                    d.onclick = null;
+                } else {
+                    d.onclick = () => {
+                        document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
+                        d.classList.add('selected');
+                        selDate = `${year}-${String(month + 1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                    };
+                }
                 grid.appendChild(d);
             }
+        }
+
+        function changeMonth(diff) {
+            currentMonth.setMonth(currentMonth.getMonth() + diff);
+            initCalendar();
         }
 
         async function reserve() {
