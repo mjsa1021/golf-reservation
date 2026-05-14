@@ -24,8 +24,13 @@
         .btn-secondary { width: 100%; padding: 15px; background: #fff; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 15px; }
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+        .calendar-nav button { width: auto; padding: 8px 12px; font-size: 1rem; margin: 0; }
+        .calendar-title { font-weight: bold; color: #333; }
         .day { padding: 10px; text-align: center; background: #f9f9f9; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .day.selected { background: var(--primary); color: white; }
+        .day.disabled { background: #e0e0e0; color: #999; cursor: not-allowed; }
+        .day-label { text-align: center; font-weight: bold; color: #666; padding: 8px 0; }
         
         .time-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
         .time-btn { padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; text-align: center; font-weight: bold; font-size: 0.9rem; }
@@ -65,9 +70,9 @@
                 <input type="password" id="user-pw" placeholder="비밀번호">
                 <div id="signup-extra" style="display:none;">
                     <input type="text" id="user-name" placeholder="성함">
-                    <input type="text" id="user-tel" placeholder="연락처">
                 </div>
                 <button onclick="handleAuth()" id="btn-auth-main" class="btn-primary">로그인 하기</button>
+                <button onclick="findPassword()" class="btn-secondary">비밀번호 찾기</button>
                 <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-secondary">회원가입 전환</button>
             </div>
         </div>
@@ -75,6 +80,14 @@
         <div id="reserve-section" class="section">
             <div class="content-card">
                 <h3>1. 날짜 선택</h3>
+                <div style="text-align: center; margin-bottom: 8px; font-size: 1.2rem; font-weight: bold;">
+                    <span id="current-date-display">0000년 0월 0일</span>
+                </div>
+                <div class="calendar-nav">
+                    <button class="btn-secondary" onclick="changeMonth(-1)">이전 달</button>
+                    <span id="current-month-display" class="calendar-title">0000년 0월</span>
+                    <button class="btn-secondary" onclick="changeMonth(1)">다음 달</button>
+                </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
 
                 <h3 style="margin-top:25px;">2. 시간 선택</h3>
@@ -105,7 +118,7 @@
                 <h2>구장 위치</h2>
                 <div class="res-item">
                     <div><b>경산 파크골프장</b><br><small>경상북도 경산시 남천면</small></div>
-                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://maps.google.com/?q=경산파크골프장')">길찾기</button>
+                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://www.google.com/maps/search/%EA%B2%BD%EC%82%B0+%ED%8C%8C%ED%81%AC%EA%B3%A8%ED%94%84%EC%9E%A5')">길찾기</button>
                 </div>
                 <button onclick="goHome()" class="btn-secondary">홈으로</button>
             </div>
@@ -127,6 +140,7 @@
         let isSignupMode = false;
         let selDate = "";
         let selTime = "";
+        let currentMonth = new Date();
 
         window.onload = () => {
             const user = localStorage.getItem('mem_name');
@@ -154,12 +168,32 @@
         }
 
         async function handleAuth() {
-            const id = document.getElementById('user-id').value;
+            const id = document.getElementById('user-id').value.trim();
             const pw = document.getElementById('user-pw').value;
             if(isSignupMode) {
-                const name = document.getElementById('user-name').value;
-                const tel = document.getElementById('user-tel').value;
-                const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name, mem_tel: tel }]);
+                const name = document.getElementById('user-name').value.trim();
+                if(!id || !pw || !name) {
+                    alert("전화번호, 비밀번호, 성함을 모두 입력해주세요.");
+                    return;
+                }
+
+                const { data: existsUser, error: existsError } = await _supabase
+                    .from('member')
+                    .select('mem_no')
+                    .eq('mem_id', id)
+                    .limit(1);
+
+                if (existsError) {
+                    alert("회원 확인 중 오류가 발생했습니다.");
+                    return;
+                }
+
+                if (existsUser && existsUser.length > 0) {
+                    alert("이미 가입된 전화번호입니다. 로그인해 주세요.");
+                    return;
+                }
+
+                const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name }]);
                 if(error) alert("실패"); else { alert("성공!"); location.reload(); }
             } else {
                 const { data } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
@@ -171,14 +205,69 @@
             }
         }
 
+        async function findPassword() {
+            const id = document.getElementById('user-id').value.trim();
+            if (!id) {
+                alert("아이디(전화번호)를 먼저 입력해주세요.");
+                return;
+            }
+
+            const { data, error } = await _supabase
+                .from('member')
+                .select('mem_pw')
+                .eq('mem_id', id)
+                .single();
+
+            if (error || !data) {
+                alert("해당 전화번호로 가입된 회원이 없습니다.");
+                return;
+            }
+
+            alert(`회원님의 비밀번호는 ${data.mem_pw} 입니다.`);
+        }
+
         function loginUI(name) {
-            document.getElementById('auth-status').innerHTML = `${name}님 | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
+            document.getElementById('auth-status').innerHTML = `${name}님 | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span> | <span onclick="deleteAccount()" style="cursor:pointer; color:#c62828; font-weight:bold;">회원탈퇴</span>`;
             initCalendar();
             fetchRes();
             goHome();
         }
 
         function logout() { localStorage.clear(); location.reload(); }
+
+        async function deleteAccount() {
+            const memNo = localStorage.getItem('mem_no');
+            if(!memNo) {
+                alert("로그인 정보가 없습니다.");
+                return;
+            }
+
+            if(!confirm("정말 회원탈퇴 하시겠습니까? 탈퇴 시 예약 내역도 함께 삭제됩니다.")) return;
+
+            const { error: resDeleteError } = await _supabase
+                .from('reservation')
+                .delete()
+                .eq('mem_no', memNo);
+
+            if (resDeleteError) {
+                alert("예약 내역 삭제 중 오류가 발생했습니다.");
+                return;
+            }
+
+            const { error: memberDeleteError } = await _supabase
+                .from('member')
+                .delete()
+                .eq('mem_no', memNo);
+
+            if (memberDeleteError) {
+                alert("회원탈퇴 처리 중 오류가 발생했습니다.");
+                return;
+            }
+
+            localStorage.clear();
+            alert("회원탈퇴가 완료되었습니다.");
+            location.reload();
+        }
 
         function checkLoginForReserve() {
             if(localStorage.getItem('mem_no')) showSection('reserve-section');
@@ -188,28 +277,86 @@
         function initCalendar() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
-            for(let i=1; i<=28; i++) {
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+
+            document.getElementById('current-date-display').innerText = 
+                `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+            document.getElementById('current-month-display').innerText = `${year}년 ${month + 1}월`;
+
+            ['일', '월', '화', '수', '목', '금', '토'].forEach((dayName) => {
+                const label = document.createElement('div');
+                label.className = 'day-label';
+                label.innerText = dayName;
+                grid.appendChild(label);
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for(let i=1; i<=lastDay; i++) {
                 const d = document.createElement('div');
-                d.className = 'day'; d.innerText = i;
-                d.onclick = () => {
-                    document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
-                    d.classList.add('selected');
-                    selDate = `2026-04-${String(i).padStart(2,'0')}`;
-                };
+                d.className = 'day';
+                d.innerText = i;
+                
+                const currentDate = new Date(year, month, i);
+                
+                if(currentDate < today) {
+                    d.classList.add('disabled');
+                    d.onclick = null;
+                } else {
+                    d.onclick = () => {
+                        document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
+                        d.classList.add('selected');
+                        selDate = `${year}-${String(month + 1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                    };
+                }
                 grid.appendChild(d);
             }
+        }
+
+        function changeMonth(diff) {
+            currentMonth.setMonth(currentMonth.getMonth() + diff);
+            initCalendar();
         }
 
         async function reserve() {
             if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
             const memNo = localStorage.getItem('mem_no');
             const people = document.getElementById('res-people').value;
+            const courtName = '경산 파크골프장';
+
+            const { data: dupData, error: dupError } = await _supabase
+                .from('reservation')
+                .select('res_no')
+                .eq('res_date', selDate)
+                .eq('res_time', selTime)
+                .eq('court_name', courtName)
+                .limit(1);
+
+            if (dupError) {
+                alert("중복 예약 확인 중 오류가 발생했습니다.");
+                return;
+            }
+
+            if (dupData && dupData.length > 0) {
+                alert("이미 다른 사용자가 예약한 시간입니다. 다른 시간을 선택해주세요.");
+                return;
+            }
 
             const { error } = await _supabase.from('reservation').insert([{ 
                 mem_no: parseInt(memNo), 
                 res_date: selDate, 
                 res_time: selTime,
-                court_name: '경산 파크골프장', 
+                court_name: courtName, 
                 status: `예약완료(${people}명)` 
             }]);
 
