@@ -123,22 +123,18 @@
         <div id="map-section" class="section">
             <div class="content-card">
                 <h2>구장 위치 안내</h2>
-                
                 <div class="res-item">
-                    <div><b>경산 파크골프장</b><br><small>경상북도 경산시 남천면 산전리</small></div>
-                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://www.google.com/maps/search/경산파크골프장')">길찾기</button>
+                    <div><b>경산 파크골프장</b><br><small>경상북도 경산시 남천면</small></div>
+                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3236.4326500570533!2d128.7183!3d35.8092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x35660993077e6823%3A0x6b8764a8523b9d9c!2z6rK97IKw7YyM7YGs6rOo7ZSE7J6l!5e0!3m2!1sko!2skr!4v17150000000001')">길찾기</button>
                 </div>
-
                 <div class="res-item">
-                    <div><b>하양 파크골프장</b><br><small>경상북도 경산시 하양읍 부호리</small></div>
-                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://www.google.com/maps/search/하양파크골프장')">길찾기</button>
+                    <div><b>하양 파크골프장</b><br><small>경상북도 경산시 하양읍</small></div>
+                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3236.4326500570533!2d128.7183!3d35.8092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x35660993077e6823%3A0x6b8764a8523b9d9c!2z6rK97IKw7YyM7YGs6rOo7ZSE7J6l!5e0!3m2!1sko!2skr!4v17150000000002')">길찾기</button>
                 </div>
-
                 <div class="res-item">
-                    <div><b>진량 파크골프장</b><br><small>경상북도 경산시 진량읍 양기리</small></div>
-                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://www.google.com/maps/search/진량파크골프장')">길찾기</button>
+                    <div><b>진량 파크골프장</b><br><small>경상북도 경산시 진량읍</small></div>
+                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3236.4326500570533!2d128.7183!3d35.8092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x35660993077e6823%3A0x6b8764a8523b9d9c!2z6rK97IKw7YyM7YGs6rOo7ZSE7J6l!5e0!3m2!1sko!2skr!4v17150000000003')">길찾기</button>
                 </div>
-
                 <button onclick="goHome()" class="btn-secondary">홈으로</button>
             </div>
         </div>
@@ -146,8 +142,8 @@
         <div id="info-notice" class="section">
             <div class="content-card">
                 <h2>공지사항</h2>
-                <p>• 경산 지역 내 파크골프장 통합 예약 시스템입니다.</p>
-                <p>• 구장별 운영 시간을 확인 후 예약해 주세요.</p>
+                <p>준비중</p>
+                <p>준비중</p>
                 <button onclick="goHome()" class="btn-primary">확인</button>
             </div>
         </div>
@@ -214,20 +210,28 @@
 
         async function findPassword() {
             const id = document.getElementById('user-id').value.trim();
-            if (!id) return alert("아이디를 입력해주세요.");
-            const { data } = await _supabase.from('member').select('mem_pw').eq('mem_id', id).single();
-            if (data) alert(`비밀번호는 ${data.mem_pw} 입니다.`);
-            else alert("회원 정보가 없습니다.");
+            if (!id) return alert("아이디(전화번호)를 입력해주세요.");
+            const { data, error } = await _supabase.from('member').select('mem_pw').eq('mem_id', id).single();
+            if (error || !data) return alert("회원 정보가 없습니다.");
+            alert(`회원님의 비밀번호는 ${data.mem_pw} 입니다.`);
         }
 
         function loginUI(name) {
-            document.getElementById('auth-status').innerHTML = `${name}님 | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
+            document.getElementById('auth-status').innerHTML = `${name}님 | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span> | <span onclick="deleteAccount()" style="cursor:pointer; color:#c62828; font-weight:bold;">회원탈퇴</span>`;
             initCalendar();
             fetchRes();
             goHome();
         }
 
         function logout() { localStorage.clear(); location.reload(); }
+
+        async function deleteAccount() {
+            const memNo = localStorage.getItem('mem_no');
+            if(!confirm("정말 회원탈퇴 하시겠습니까?")) return;
+            await _supabase.from('reservation').delete().eq('mem_no', memNo);
+            await _supabase.from('member').delete().eq('mem_no', memNo);
+            logout();
+        }
 
         function checkLoginForReserve() {
             if(localStorage.getItem('mem_no')) showSection('reserve-section');
@@ -241,30 +245,20 @@
             today.setHours(0, 0, 0, 0);
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
-
             document.getElementById('current-date-display').innerText = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
             document.getElementById('current-month-display').innerText = `${year}년 ${month + 1}월`;
-
-            ['일', '월', '화', '수', '목', '금', '토'].forEach((dayName) => {
+            ['일', '월', '화', '수', '목', '금', '토'].forEach(dayName => {
                 const label = document.createElement('div');
-                label.className = 'day-label';
-                label.innerText = dayName;
-                grid.appendChild(label);
+                label.className = 'day-label'; label.innerText = dayName; grid.appendChild(label);
             });
-
             const firstDay = new Date(year, month, 1).getDay();
             const lastDay = new Date(year, month + 1, 0).getDate();
-
             for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
-
             for(let i=1; i<=lastDay; i++) {
-                const d = document.createElement('div');
-                d.className = 'day';
-                d.innerText = i;
+                const d = document.createElement('div'); d.className = 'day'; d.innerText = i;
                 const currentDate = new Date(year, month, i);
-                if(currentDate < today) {
-                    d.classList.add('disabled');
-                } else {
+                if(currentDate < today) d.classList.add('disabled');
+                else {
                     d.onclick = () => {
                         document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
                         d.classList.add('selected');
@@ -275,39 +269,17 @@
             }
         }
 
-        function changeMonth(diff) {
-            currentMonth.setMonth(currentMonth.getMonth() + diff);
-            initCalendar();
-        }
+        function changeMonth(diff) { currentMonth.setMonth(currentMonth.getMonth() + diff); initCalendar(); }
 
         async function reserve() {
             if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
             const memNo = localStorage.getItem('mem_no');
             const people = document.getElementById('res-people').value;
             const courtName = document.getElementById('res-court').value;
-
-            const { data: dupData } = await _supabase
-                .from('reservation')
-                .select('res_no')
-                .eq('res_date', selDate)
-                .eq('res_time', selTime)
-                .eq('court_name', courtName)
-                .limit(1);
-
-            if (dupData && dupData.length > 0) {
-                return alert("이미 예약된 시간입니다.");
-            }
-
-            const { error } = await _supabase.from('reservation').insert([{ 
-                mem_no: parseInt(memNo), 
-                res_date: selDate, 
-                res_time: selTime,
-                court_name: courtName, 
-                status: `예약완료(${people}명)` 
-            }]);
-
-            if(error) alert("에러: " + error.message);
-            else { alert("예약이 확정되었습니다"); fetchRes(); }
+            const { data: dupData } = await _supabase.from('reservation').select('res_no').eq('res_date', selDate).eq('res_time', selTime).eq('court_name', courtName).limit(1);
+            if (dupData && dupData.length > 0) return alert("이미 예약된 시간입니다.");
+            const { error } = await _supabase.from('reservation').insert([{ mem_no: parseInt(memNo), res_date: selDate, res_time: selTime, court_name: courtName, status: `예약완료(${people}명)` }]);
+            if(error) alert("실패"); else { alert("예약 확정!"); fetchRes(); }
         }
 
         async function fetchRes() {
@@ -317,22 +289,16 @@
             if(data && data.length > 0) {
                 listDiv.innerHTML = data.map(r => `
                     <div class="res-item">
-                        <div>
-                            <strong>${r.res_date}</strong> <span style="color:var(--primary)">${r.res_time}</span><br>
-                            <small>${r.court_name} / ${r.status}</small>
-                        </div>
+                        <div><strong>${r.res_date}</strong> <span style="color:var(--primary)">${r.res_time}</span><br><small>${r.court_name} / ${r.status}</small></div>
                         <button class="btn-cancel" onclick="cancelRes(${r.res_no})">취소</button>
                     </div>`).join('');
-            } else {
-                listDiv.innerText = "예약 내역이 없습니다.";
-            }
+            } else listDiv.innerText = "예약 내역이 없습니다.";
         }
 
         async function cancelRes(resNo) {
             if(!confirm("취소하시겠습니까?")) return;
-            const { error } = await _supabase.from('reservation').delete().eq('res_no', resNo);
-            if(error) alert("실패");
-            else { alert("취소 완료"); fetchRes(); }
+            await _supabase.from('reservation').delete().eq('res_no', resNo);
+            fetchRes();
         }
     </script>
 </body>
