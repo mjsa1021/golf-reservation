@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산·대구 파크골프 예약 시스템</title>
+    <title>경산·대구 파크골프 예약 시스템 (마스터 버전)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -19,7 +19,7 @@
         .main-banner { background: var(--primary); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
         .btn-reserve-main { background: #fff; color: var(--primary); border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
         
-        select, input { width: 100%; padding: 12px; margin-top: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; box-sizing: border-box; }
+        select, input, textarea { width: 100%; padding: 12px; margin-top: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; box-sizing: border-box; font-family: inherit; }
         .btn-primary { width: 100%; padding: 15px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
         .btn-secondary { width: 100%; padding: 15px; background: #fff; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
         
@@ -39,8 +39,21 @@
         .res-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #eee; }
         .btn-cancel { background: #ff5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
+        /* ⚙️ 관리자 전용 스타일 */
         .admin-banner { background: var(--admin-color); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
         .badge-user { background: #e3f2fd; color: #1e88e5; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
+        .badge-admin { background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
+        
+        /* 통계 대시보드 그리드 */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stats-card { background: #f4f6f7; border-left: 5px solid var(--admin-color); border-radius: 10px; padding: 15px; text-align: center; }
+        .stats-card h4 { margin: 0; color: #666; font-size: 0.9rem; }
+        .stats-card p { margin: 5px 0 0 0; font-size: 1.8rem; font-weight: bold; color: var(--admin-color); }
+        
+        /* 공지사항 뷰 스타일 */
+        .notice-item { padding: 15px 0; border-bottom: 1px solid #eee; }
+        .notice-item h4 { margin: 0 0 5px 0; color: #333; }
+        .notice-item p { margin: 0; color: #666; font-size: 0.9rem; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -76,7 +89,7 @@
                 </div>
                 <button onclick="handleAuth()" id="btn-auth-main" class="btn-primary">로그인 하기</button>
                 <button onclick="findPassword()" class="btn-secondary">비밀번호 찾기</button>
-                <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-secondary">회원가입</button>
+                <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-secondary">회원가입 전환</button>
             </div>
         </div>
 
@@ -125,13 +138,36 @@
 
         <div id="admin-section" class="section">
             <div class="admin-banner">
-                <h1>관리자 모드</h1>
-                <p>권한이 확인된 계정만 진입 허용</p>
+                <h1>⚙️ 대시보드 시스템 관리자 모드</h1>
+                <p>전체 회원 및 예약 현황을 실시간 관제하고 공지사항을 통제합니다.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <h4>📊 총 서비스 회원수</h4>
+                    <p id="stats-total-users">0명</p>
+                </div>
+                <div class="stats-card">
+                    <h4>⛳ 총 등록된 예약수</h4>
+                    <p id="stats-total-reservations">0건</p>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-bullhorn"></i> 📢 실시간 공지사항 등록</h3>
+                <input type="text" id="admin-notice-title" placeholder="공지사항 제목을 입력하세요.">
+                <textarea id="admin-notice-content" rows="3" placeholder="공지사항 상세 내용을 입력하세요." style="margin-top:10px;"></textarea>
+                <button onclick="postNotice()" class="btn-primary" style="margin-top:15px; padding:10px; font-size:1rem; background:var(--admin-color);">공지사항 발행하기</button>
             </div>
             
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid Birds"></i>전체 시스템 예약 현황</h3>
-                <div id="admin-total-res-list" style="margin-top: 15px;">전체 내역을 불러오는 중...</div>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-calendar-days"></i> 🗓️ 실시간 예약 통제 관리</h3>
+                <div id="admin-total-res-list" style="margin-top: 15px;">전체 예약 내역을 불러오는 중...</div>
+            </div>
+
+            <div class="content-card">
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-users"></i> 👥 서비스 가입 회원 명부 관리</h3>
+                <div id="admin-user-list" style="margin-top: 15px;">회원 명부를 불러오는 중...</div>
             </div>
         </div>
 
@@ -153,7 +189,14 @@
                 <button onclick="goHome()" class="btn-secondary">홈으로</button>
             </div>
         </div>
-        <div id="info-notice" class="section"><div class="content-card"><h2>공지사항</h2><p>준비중</p><button onclick="goHome()" class="btn-primary">확인</button></div></div>
+
+        <div id="info-notice" class="section">
+            <div class="content-card">
+                <h2>📢 시스템 공지사항</h2>
+                <div id="user-notice-list">공지사항을 불러오는 중입니다...</div>
+                <button onclick="goHome()" class="btn-primary" style="margin-top:20px;">확인</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -167,6 +210,7 @@
         window.onload = () => {
             const user = localStorage.getItem('mem_name');
             const isAdmin = localStorage.getItem('is_admin');
+            fetchUserNotices(); // 메인 진입 전 공지사항 사전 로드
             if(user) {
                 if(isAdmin === 'true') loginAdminUI(user);
                 else loginUI(user);
@@ -176,6 +220,7 @@
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            if(id === 'info-notice') fetchUserNotices();
         }
 
         function goHome() { 
@@ -196,7 +241,6 @@
             event.target.classList.add('selected');
         }
 
-        // 수정된 로그인 처리 부분 (DB의 is_admin 필드값 판별)
         async function handleAuth() {
             const id = document.getElementById('user-id').value.trim();
             const pw = document.getElementById('user-pw').value;
@@ -208,22 +252,17 @@
                 const { data: existsUser } = await _supabase.from('member').select('mem_no').eq('mem_id', id).limit(1);
                 if (existsUser && existsUser.length > 0) return alert("이미 가입된 전화번호입니다.");
                 
-                // 가입 시 일반 유저는 기본적으로 관리자 권한을 가질 수 없도록 차단 (is_admin: false)
                 const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name, is_admin: false }]);
-                if(error) alert("실패"); else { alert("성공"); location.reload(); }
+                if(error) alert("실패"); else { alert("성공!"); location.reload(); }
             } else {
-                // DB에서 해당 계정 정보와 관리자 여부(is_admin) 컬럼을 함께 가져옴
                 const { data } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
                 if(data) {
                     localStorage.setItem('mem_no', data.mem_no);
                     localStorage.setItem('mem_name', data.mem_name);
-                    localStorage.setItem('is_admin', data.is_admin); // true 또는 false 저장됨
+                    localStorage.setItem('is_admin', data.is_admin);
                     
-                    if(data.is_admin === true) {
-                        loginAdminUI(data.mem_name);
-                    } else {
-                        loginUI(data.mem_name);
-                    }
+                    if(data.is_admin === true) loginAdminUI(data.mem_name);
+                    else loginUI(data.mem_name);
                 } else alert("정보를 확인하세요.");
             }
         }
@@ -233,9 +272,10 @@
             initCalendar(); fetchRes(); goHome();
         }
 
+        // 🛠️ 관리자 전용 대시보드 데이터 총괄 로드 및 UI 갱신
         function loginAdminUI(name) {
-            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
-            fetchAdminTotalRes();
+            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">🛠️ 관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
+            loadAdminDashboard();
             showSection('admin-section');
         }
 
@@ -302,6 +342,31 @@
             } else listDiv.innerText = "예약 내역이 없습니다.";
         }
 
+        async function cancelRes(resNo) {
+            if(!confirm("취소하시겠습니까?")) return;
+            await _supabase.from('reservation').delete().eq('res_no', resNo); fetchRes();
+        }
+
+        /* ==========================================================================
+           ⚙️ 관리자 전용 신규 스크립트 기능 집합 (통계 카드, 회원 명부, 공지사항)
+           ========================================================================== */
+
+        // 관리자 대시보드 통합 새로고침 기능
+        function loadAdminDashboard() {
+            fetchAdminStats();
+            fetchAdminTotalRes();
+            fetchAdminUsers();
+        }
+
+        // 1. 대시보드 통계 실시간 스코어 집계 함수
+        async function fetchAdminStats() {
+            const { count: userCount } = await _supabase.from('member').select('*', { count: 'exact', head: true });
+            const { count: resCount } = await _supabase.from('reservation').select('*', { count: 'exact', head: true });
+            document.getElementById('stats-total-users').innerText = `${userCount || 0}명`;
+            document.getElementById('stats-total-reservations').innerText = `${resCount || 0}건`;
+        }
+
+        // 2. 전체 시스템 예약 내역 로드
         async function fetchAdminTotalRes() {
             const { data } = await _supabase.from('reservation').select('*').order('res_date', {ascending: true});
             const adminListDiv = document.getElementById('admin-total-res-list');
@@ -310,14 +375,62 @@
             } else adminListDiv.innerText = "전체 예약 내역이 없습니다.";
         }
 
-        async function cancelRes(resNo) {
-            if(!confirm("취소하시겠습니까?")) return;
-            await _supabase.from('reservation').delete().eq('res_no', resNo); fetchRes();
-        }
-
         async function cancelAdminRes(resNo) {
             if(!confirm("관리자 권한으로 강제 취소하시겠습니까?")) return;
-            await _supabase.from('reservation').delete().eq('res_no', resNo); alert("취소되었습니다."); fetchAdminTotalRes();
+            await _supabase.from('reservation').delete().eq('res_no', resNo); 
+            alert("취소되었습니다."); loadAdminDashboard();
+        }
+
+        // 3. 회원 명부 조회 및 강제 탈퇴 기능
+        async function fetchAdminUsers() {
+            const { data } = await _supabase.from('member').select('*').order('mem_no', {ascending: true});
+            const userListDiv = document.getElementById('admin-user-list');
+            if(data && data.length > 0) {
+                userListDiv.innerHTML = data.map(m => `
+                    <div class="res-item">
+                        <div>
+                            <strong>${m.mem_name}</strong> (아이디: ${m.mem_id}) ${m.is_admin ? '<span class="badge-admin">최고관리자</span>' : '<span class="badge-user">일반회원</span>'}<br>
+                            <small>고유번호: ${m.mem_no} ${m.mem_tel ? '/ 연락처: ' + m.mem_tel : ''}</small>
+                        </div>
+                        ${m.is_admin ? '' : `<button class="btn-cancel" style="background:#c62828;" onclick="expelUser(${m.mem_no}, '${m.mem_name}')">강제 추방</button>`}
+                    </div>`).join('');
+            } else userListDiv.innerText = "등록된 회원이 없습니다.";
+        }
+
+        // 회원 추방 처리 (CASCADE 설정으로 예약 정보도 자동 폐기)
+        async function expelUser(memNo, name) {
+            if(!confirm(`[경고] 정말로 ${name} 회원을 데이터베이스에서 영구 추방 및 탈퇴 시키겠습니까?\n해당 회원의 예약 정보도 일괄 소멸됩니다.`)) return;
+            await _supabase.from('member').delete().eq('mem_no', memNo);
+            alert(`${name} 회원이 강제 추방되었습니다.`); loadAdminDashboard();
+        }
+
+        // 4. 공지사항 업로드 처리 함수
+        async function postNotice() {
+            const title = document.getElementById('admin-notice-title').value.trim();
+            const content = document.getElementById('admin-notice-content').value.trim();
+            if(!title || !content) return alert("공지사항의 제목과 내용을 모두 입력해 주세요.");
+            
+            const { error } = await _supabase.from('notice').insert([{ title: title, content: content }]);
+            if(error) alert("공지사항 등록 실패");
+            else {
+                alert("새로운 공지사항이 전 회원에게 발행되었습니다.");
+                document.getElementById('admin-notice-title').value = '';
+                document.getElementById('admin-notice-content').value = '';
+            }
+        }
+
+        // 5. 일반 회원용 실시간 공지사항 연동 표출 기능
+        async function fetchUserNotices() {
+            const { data } = await _supabase.from('notice').select('*').order('notice_no', {ascending: false});
+            const userNoticeDiv = document.getElementById('user-notice-list');
+            if(data && data.length > 0) {
+                userNoticeDiv.innerHTML = data.map(n => `
+                    <div class="notice-item">
+                        <h4>📌 ${n.title}</h4>
+                        <p>${n.content.replace(/\n/g, '<br>')}</p>
+                        <small style="color:#aaa; font-size:0.75rem;">작성일: ${new Date(n.created_at).toLocaleDateString()}</small>
+                    </div>`).join('');
+            } else userNoticeDiv.innerText = "현재 등록된 공지사항이 없습니다.";
         }
     </script>
 </body>
