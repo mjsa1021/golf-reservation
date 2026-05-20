@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산·대구 파크골프 예약 시스템 (정석 권한 분리)</title>
+    <title>경산·대구 파크골프 예약 시스템</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -76,7 +76,7 @@
                 </div>
                 <button onclick="handleAuth()" id="btn-auth-main" class="btn-primary">로그인 하기</button>
                 <button onclick="findPassword()" class="btn-secondary">비밀번호 찾기</button>
-                <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-secondary">회원가입 전환</button>
+                <button onclick="toggleSignup()" id="btn-signup-toggle" class="btn-secondary">회원가입</button>
             </div>
         </div>
 
@@ -125,12 +125,12 @@
 
         <div id="admin-section" class="section">
             <div class="admin-banner">
-                <h1>⚙️ 시스템 관리자 모드</h1>
-                <p>데이터베이스 권한이 확인된 계정만 진입이 허용됩니다.</p>
+                <h1>관리자 모드</h1>
+                <p>권한이 확인된 계정만 진입 허용</p>
             </div>
             
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid Birds"></i> 📊 전체 시스템 예약 현황</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid Birds"></i>전체 시스템 예약 현황</h3>
                 <div id="admin-total-res-list" style="margin-top: 15px;">전체 내역을 불러오는 중...</div>
             </div>
         </div>
@@ -196,7 +196,7 @@
             event.target.classList.add('selected');
         }
 
-        // 🌟 수정된 로그인 처리 부분 (DB의 is_admin 필드값 판별)
+        // 수정된 로그인 처리 부분 (DB의 is_admin 필드값 판별)
         async function handleAuth() {
             const id = document.getElementById('user-id').value.trim();
             const pw = document.getElementById('user-pw').value;
@@ -210,7 +210,7 @@
                 
                 // 가입 시 일반 유저는 기본적으로 관리자 권한을 가질 수 없도록 차단 (is_admin: false)
                 const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name, is_admin: false }]);
-                if(error) alert("실패"); else { alert("성공!"); location.reload(); }
+                if(error) alert("실패"); else { alert("성공"); location.reload(); }
             } else {
                 // DB에서 해당 계정 정보와 관리자 여부(is_admin) 컬럼을 함께 가져옴
                 const { data } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
@@ -234,7 +234,7 @@
         }
 
         function loginAdminUI(name) {
-            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">🛠️ 관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
+            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
             fetchAdminTotalRes();
             showSection('admin-section');
         }
