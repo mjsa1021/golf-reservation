@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산·대구 파크골프 예약 시스템 (최종 마스터 버전)</title>
+    <title>경산·대구 파크골프 예약 시스템</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -39,7 +39,7 @@
         .res-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #eee; }
         .btn-cancel { background: #ff5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* ⚙️ 관리자 전용 스타일 */
+        /* 관리자 전용 스타일 */
         .admin-banner { background: var(--admin-color); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
         .badge-user { background: #e3f2fd; color: #1e88e5; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
         .badge-admin { background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
@@ -136,38 +136,37 @@
 
         <div id="admin-section" class="section">
             <div class="admin-banner">
-                <h1>⚙ "관제 및 시스템 통제" 관리자 대시보드</h1>
-                <p>전체 회원 및 예약 현황을 실시간 관제하고 공지사항을 통제합니다.</p>
+                <h1>관리자 모드</h1>
             </div>
 
             <div class="stats-grid">
                 <div class="stats-card">
-                    <h4>📊 총 서비스 회원수</h4>
+                    <h4>총 서비스 회원수</h4>
                     <p id="stats-total-users">0명</p>
                 </div>
                 <div class="stats-card">
-                    <h4>⛳ 총 등록된 예약수</h4>
+                    <h4>총 등록된 예약 건</h4>
                     <p id="stats-total-reservations">0건</p>
                 </div>
             </div>
 
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-bullhorn"></i> 📢 실시간 공지사항 등록</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-bullhorn"></i>실시간 공지사항 등록</h3>
                 <input type="text" id="admin-notice-title" placeholder="공지사항 제목을 입력하세요.">
                 <textarea id="admin-notice-content" rows="3" placeholder="공지사항 상세 내용을 입력하세요." style="margin-top:10px;"></textarea>
                 <button onclick="postNotice()" class="btn-primary" style="margin-top:15px; padding:10px; font-size:1rem; background:var(--admin-color);">공지사항 발행하기</button>
                 
-                <h4 style="color: var(--admin-color); margin-top: 25px; border-top: 1px dashed #ccc; padding-top: 15px;">📜 등록된 공지사항 목록 (삭제 관리)</h4>
+                <h4 style="color: var(--admin-color); margin-top: 25px; border-top: 1px dashed #ccc; padding-top: 15px;">등록된 공지사항 목록 (삭제 관리)</h4>
                 <div id="admin-notice-list" style="font-size:0.9rem;">공지 목록을 불러오는 중...</div>
             </div>
             
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-calendar-days"></i> 🗓️ 실시간 예약 통제 관리</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-calendar-days"></i> 실시간 예약 통제 관리</h3>
                 <div id="admin-total-res-list" style="margin-top: 15px;">전체 예약 내역을 불러오는 중...</div>
             </div>
 
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-users"></i> 👥 서비스 가입 회원 명부 관리</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-users"></i>서비스 가입 회원 명부 관리</h3>
                 <div id="admin-user-list" style="margin-top: 15px;">회원 명부를 불러오는 중...</div>
             </div>
         </div>
@@ -193,7 +192,7 @@
 
         <div id="info-notice" class="section">
             <div class="content-card">
-                <h2>📢 시스템 공지사항</h2>
+                <h2>시스템 공지사항</h2>
                 <div id="user-notice-list">공지사항을 불러오는 중입니다...</div>
                 <button onclick="goHome()" class="btn-primary" style="margin-top:20px;">확인</button>
             </div>
@@ -274,7 +273,7 @@
         }
 
         function loginAdminUI(name) {
-            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">🛠️ 관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
+            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
             loadAdminDashboard();
             showSection('admin-section');
         }
@@ -355,7 +354,7 @@
             fetchAdminStats();
             fetchAdminTotalRes();
             fetchAdminUsers();
-            fetchAdminNotices(); // 🌟 관리자용 공지 목록 로드 추가
+            fetchAdminNotices();
         }
 
         async function fetchAdminStats() {
@@ -415,7 +414,6 @@
             }
         }
 
-        // 🌟 [추가] 관리자 전용 공지사항 목록 조회 및 삭제 기능
         async function fetchAdminNotices() {
             const { data } = await _supabase.from('notice').select('*').order('notice_no', {ascending: false});
             const adminNoticeDiv = document.getElementById('admin-notice-list');
@@ -423,7 +421,7 @@
                 adminNoticeDiv.innerHTML = data.map(n => `
                     <div class="res-item">
                         <div>
-                            <strong>📌 ${n.title}</strong> <small style="color:#aaa;">(${new Date(n.created_at).toLocaleDateString()})</small>
+                            <strong>${n.title}</strong> <small style="color:#aaa;">(${new Date(n.created_at).toLocaleDateString()})</small>
                         </div>
                         <button class="btn-cancel" style="background:#e65100;" onclick="deleteNotice(${n.notice_no})">공지 삭제</button>
                     </div>`).join('');
