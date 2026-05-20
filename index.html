@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산시 파크골프 예약 시스템</title>
+    <title>경산·대구 파크골프 예약 시스템</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -43,7 +43,7 @@
 <body>
 
     <header class="header">
-        <div class="logo" onclick="goHome()">⛳ 경산시 파크골프</div>
+        <div class="logo" onclick="goHome()">⛳ 경산·대구 파크골프</div>
         <div id="auth-status">
             <button onclick="showSection('auth-section')" style="border:none; background:none; font-weight:bold; cursor:pointer;">로그인</button>
         </div>
@@ -52,7 +52,7 @@
     <div class="container">
         <div id="main-section" class="section active">
             <div class="main-banner">
-                <h1>경산시 파크골프장<br>온라인 예약 시스템</h1>
+                <h1>파크골프장<br>온라인 예약 시스템</h1>
                 <p>원하는 날짜와 시간을 선택해 예약하세요.</p>
                 <button class="btn-reserve-main" onclick="checkLoginForReserve()">지금 예약하기 →</button>
             </div>
@@ -83,7 +83,7 @@
                 <select id="res-court">
                     <option value="경산 파크골프장">경산 파크골프장 (대평동)</option>
                     <option value="하양물빛파크골프장">하양물빛파크골프장 (대조리)</option>
-                    <option value="일월파크골프장">일월파크골프장 (화랑로)</option>
+                    <option value="대구 수성파크골프장">대구 수성파크골프장 (고모동)</option>
                 </select>
 
                 <h3 style="margin-top:25px;">2. 날짜 선택</h3>
@@ -124,16 +124,16 @@
             <div class="content-card">
                 <h2>구장 위치 안내</h2>
                 <div class="res-item">
-                    <div><b>경산 파크골프장</b><br><small>경상북도 경산시 대평동 75-2 (남천 둔치)</small></div>
+                    <div><b>경산 파크골프장</b><br><small>경상북도 경산시 대평동 75-2 (남천둔치)</small></div>
                     <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://map.naver.com/v5/search/%EA%B2%BD%EC%82%B0%ED%8C%8C%ED%81%AC%EA%B3%A8%ED%94%84%EC%9E%A5')">길찾기</button>
                 </div>
                 <div class="res-item">
-                    <div><b>경산 하양물빛파크골프장</b><br><small>경상북도 경산시 하양읍 대조리 (구 시민운동장 부지)</small></div>
+                    <div><b>하양물빛파크골프장</b><br><small>경상북도 경산시 하양읍 대조리 921-51</small></div>
                     <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://map.naver.com/v5/search/%ED%95%98%EC%96%91%EB%AC%BC%EB%B9%9B%ED%8C%AC%EC%9A%B0%ED%8C%8C%ED%81%AC%EA%B3%A8%ED%94%84%EC%9E%A5')">길찾기</button>
                 </div>
                 <div class="res-item">
-                    <div><b>경산 일월파크골프장</b><br><small>경상북도 경산시 화랑로8길 34</small></div>
-                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://map.naver.com/v5/search/%EA%B2%BD%EC%82%B0%EC%9D%BC%EC%9B%94%ED%8C%AC%EC%9A%B0%ED%8C%8C%ED%81%AC%EA%B3%A8%ED%94%84%EC%9E%A5')">길찾기</button>
+                    <div><b>대구 수성파크골프장</b><br><small>대구광역시 수성구 고모동 6-2</small></div>
+                    <button class="btn-cancel" style="background:#1976d2;" onclick="window.open('https://map.naver.com/v5/search/%EB%8C%80%EA%B5%AC%EC%8A%A4%EC%84%B1%ED%8C%AC%EC%9A%B0%ED%8C%8C%ED%81%AC%EA%B3%A8%ED%94%84%EC%9E%A5')">길찾기</button>
                 </div>
                 <button onclick="goHome()" class="btn-secondary">홈으로</button>
             </div>
