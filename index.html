@@ -372,7 +372,6 @@
             }
         }
 
-        // 🌟 일자별 오전/오후 50명 실시간 인원수 합산 엔진
         async function fetchTimeSlotsForSelection() {
             const courtName = document.getElementById('res-court').value;
             const { data } = await _supabase.from('reservation').select('res_time, status').eq('res_date', selDate).eq('court_name', courtName);
@@ -418,26 +417,14 @@
 
         function changeMonth(diff) { currentMonth.setMonth(currentMonth.getMonth() + diff); initCalendar(); }
 
-        // 🛡️ 인원수 정밀 카운팅 + 중복 체크 처리부
+        // 🛡️ [업그레이드] 다중 대리/중복 예약 완전 허용 및 잔여석 자동 통제 시스템
         async function reserve() {
             if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
             const memNo = localStorage.getItem('mem_no');
             const people = parseInt(document.getElementById('res-people').value);
             const courtName = document.getElementById('res-court').value;
             
-            // 1단계: 동등 시간대 중복 예약 원천 봉쇄
-            const { data: duplicateCheck } = await _supabase.from('reservation')
-                .select('res_no')
-                .eq('mem_no', parseInt(memNo))
-                .eq('res_date', selDate)
-                .eq('res_time', selTime)
-                .eq('court_name', courtName);
-
-            if (duplicateCheck && duplicateCheck.length > 0) {
-                return alert(`⚠️ 중복 예약 방지\n이미 해당 날짜/시간[${selDate} ${selTime}]에 예약된 내역이 존재합니다.`);
-            }
-
-            // 2단계: 해당 날짜/타임의 현재 총 인원수(명수) 정밀 재계산
+            // 1단계: 실시간으로 해당 날짜/시간대의 총 예약 인원수 집계
             const { data: currentRes } = await _supabase.from('reservation')
                 .select('status')
                 .eq('res_date', selDate)
@@ -454,16 +441,20 @@
 
             let availableSeats = 50 - timeReservedTotal;
 
-            // 신청 명수가 남은 자리를 초과하는지 검증
+            // 2단계: 잔여석 매칭 검증
             if(timeReservedTotal + people > 50) {
-                return alert(`⚠️ 정원 초과 (잔여석 부족)\n현재 예약 가능한 자리는 [ ${availableSeats}자리 ] 입니다.\n신청하신 인원(${people}명)이 남은 자리보다 많아 예약할 수 없습니다.`);
+                if (availableSeats <= 0) {
+                    return alert(`⚠️ 예약 불가\n현재 타임은 완전히 만석(50명 초과)입니다.`);
+                }
+                return alert(`⚠️ 잔여석 부족\n현재 남은 자리는 [ ${availableSeats}자리 ] 뿐입니다.\n인원수를 ${availableSeats}명 이하로 조정하여 다시 신청해 주세요.`);
             }
 
+            // 3단계: 확인번호 부여 및 DB 저장 (동일인 중복 체크 로직 제거 완료!)
             const randomCode = generateRandomTicket();
             const finalStatusStr = `예약완료(${people}명) [확인번호: ${randomCode}]`;
 
             const { error } = await _supabase.from('reservation').insert([{ mem_no: parseInt(memNo), res_date: selDate, res_time: selTime, court_name: courtName, status: finalStatusStr }]);
-            if(error) alert("실패"); else { alert(`🎉 예약이 성공적으로 완료되었습니다!\n▶ 예약 인원: ${people}명\n▶ 확인 일련번호: ${randomCode}`); fetchRes(); fetchTimeSlotsForSelection(); }
+            if(error) alert("실패"); else { alert(`🎉 예약이 성공적으로 완료되었습니다!\n▶ 예약 인원: ${people}명\n▶ 확인 일련번호: ${randomCode}\n(동일 타임 추가 대리 예약 가능)`); fetchRes(); fetchTimeSlotsForSelection(); }
         }
 
         async function fetchRes() {
@@ -535,7 +526,7 @@
         }
 
         async function expelUser(memNo, name) {
-            if(!confirm(`[경고] 정말로 ${name} 회원을 데이터베이스에서 영구 추방 및 탈퇴 시키겠습니까?\n해당 회원의 예약 정보도 일괄 소멸됩니다.`)) return;
+            if(!confirm(`[경고] 정말로 ${name} 회원을 데이터베이스에서 영구 추방 및 탈퇴 시겠습니까?\n해당 회원의 예약 정보도 일괄 소멸됩니다.`)) return;
             await _supabase.from('member').delete().eq('mem_no', memNo);
             alert(`${name} 회원이 강제 추방되었습니다.`); loadAdminDashboard();
         }
