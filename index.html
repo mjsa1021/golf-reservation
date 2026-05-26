@@ -443,9 +443,9 @@
             // 2단계: 잔여석 매칭 검증
             if(timeReservedTotal + people > 50) {
                 if (availableSeats <= 0) {
-                    return alert(`⚠️ 예약 불가\n현재 타임은 완전히 만석(50명 초과)입니다.`);
+                    return alert(`예약 불가\n현재 타임은 완전히 만석(50명 초과)입니다.`);
                 }
-                return alert(`⚠️ 잔여석 부족\n현재 남은 자리는 [ ${availableSeats}자리 ] 뿐입니다.\n인원수를 ${availableSeats}명 이하로 조정하여 다시 신청해 주세요.`);
+                return alert(`잔여석 부족\n현재 남은 자리는 [ ${availableSeats}자리 ] 뿐입니다.\n인원수를 ${availableSeats}명 이하로 조정하여 다시 신청해 주세요.`);
             }
 
             // 3단계: 확인번호 부여 및 DB 저장 (동일인 중복 체크 로직 제거 완료!)
@@ -453,7 +453,7 @@
             const finalStatusStr = `예약완료(${people}명) [확인번호: ${randomCode}]`;
 
             const { error } = await _supabase.from('reservation').insert([{ mem_no: parseInt(memNo), res_date: selDate, res_time: selTime, court_name: courtName, status: finalStatusStr }]);
-            if(error) alert("실패"); else { alert(`예약 성공\n▶ 예약 인원: ${people}명\n▶ 확인 일련번호: ${randomCode}\n(동일 타임 추가 대리 예약 가능)`); fetchRes(); fetchTimeSlotsForSelection(); }
+            if(error) alert("실패"); else { alert(`예약 성공\n예약 인원: ${people}명\n확인 일련번호: ${randomCode}`); fetchRes(); fetchTimeSlotsForSelection(); }
         }
 
         async function fetchRes() {
@@ -521,7 +521,7 @@
         }
 
         async function expelUser(memNo, name) {
-            if(!confirm(`[경고] 정말로 ${name} 회원을 데이터베이스에서 영구 추방 및 탈퇴 시겠습니까?\n해당 회원의 예약 정보도 일괄 소멸됩니다.`)) return;
+            if(!confirm(`[경고] 정말로 ${name} 회원을 데이터베이스에서 영구 추방 및 탈퇴 시겠습니까?\n해당 회원의 기존 정보도 다 사라집니다.`)) return;
             await _supabase.from('member').delete().eq('mem_no', memNo);
             alert(`${name} 회원이 강제 추방되었습니다.`); loadAdminDashboard();
         }
