@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산·경북 파크골프 예약 시스템</title>
+    <title>경산·대구 파크골프 예약 시스템 (최종 완성본)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -40,7 +40,7 @@
         .res-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #eee; }
         .btn-cancel { background: #ff5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* 관리자 전용 스타일 */
+        /* ⚙️ 관리자 전용 스타일 */
         .admin-banner { background: var(--admin-color); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
         .badge-user { background: #e3f2fd; color: #1e88e5; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
         .badge-admin { background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
@@ -96,8 +96,8 @@
                 <div id="privacy-container" style="display:none;">
                     <div class="privacy-box">
                         [개인정보 수집 및 이용 동의서]<br>
-                        1. 수집항목: 성명, 휴대폰 번호, 비밀번호<br>
-                        2. 수집목적: 경산·경북 파크골프 예약 시스템 회원 확인, 비번 찾기 권한<br>
+                        1. 수집항목: 성명, 휴대폰 번호(아이디), 비밀번호<br>
+                        2. 수집목적: 경산·대구 파크골프 예약 시스템 회원 확인, 고유 식별 일련번호 발급 및 비번 찾기 권한 검증<br>
                         3. 보유기간: 회원 탈퇴 시 혹은 시스템 종료 시까지 즉시 파기합니다.
                     </div>
                     <div class="privacy-check">
@@ -123,16 +123,16 @@
 
                 <h3 style="margin-top:25px;">2. 날짜 선택</h3>
                 <div style="text-align: center; margin-bottom: 8px; font-size: 1.2rem; font-weight: bold;">
-                    <span id="current-date-display">0000년 0월 0일</span>
+                    <span id="current-date-display">2026년 0월 0일</span>
                 </div>
                 <div class="calendar-nav">
                     <button class="btn-secondary" onclick="changeMonth(-1)">이전 달</button>
-                    <span id="current-month-display" class="calendar-title">0000년 0월</span>
+                    <span id="current-month-display" class="calendar-title">2026년 0월</span>
                     <button class="btn-secondary" onclick="changeMonth(1)">다음 달</button>
                 </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
 
-                <h3 style="margin-top:25px;">3. 시간 선택 (오전 50명 / 오후 50명 정원 제한)</h3>
+                <h3 style="margin-top:25px;">3. 시간 선택 (일자별 오전 50명 / 오후 50명 정원제)</h3>
                 <div class="time-slots" id="time-slots"></div>
 
                 <h3 style="margin-top:25px;">4. 인원 선택</h3>
@@ -147,7 +147,7 @@
             </div>
 
             <div class="content-card">
-                <h3>나의 예약 현황</h3>
+                <h3>나의 예약 현황 (무작위 검증 일련번호 포함)</h3>
                 <div id="my-res-list">내역을 불러오는 중...</div>
             </div>
         </div>
@@ -160,32 +160,32 @@
 
             <div class="stats-grid">
                 <div class="stats-card">
-                    <h4>총 서비스 회원수</h4>
+                    <h4>📊 총 서비스 회원수</h4>
                     <p id="stats-total-users">0명</p>
                 </div>
                 <div class="stats-card">
-                    <h4>총 등록된 예약수</h4>
+                    <h4>⛳ 총 등록된 예약수</h4>
                     <p id="stats-total-reservations">0건</p>
                 </div>
             </div>
 
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-bullhorn"></i>실시간 공지사항 등록</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-bullhorn"></i> 📢 실시간 공지사항 등록</h3>
                 <input type="text" id="admin-notice-title" placeholder="공지사항 제목을 입력하세요.">
                 <textarea id="admin-notice-content" rows="3" placeholder="공지사항 상세 내용을 입력하세요." style="margin-top:10px;"></textarea>
                 <button onclick="postNotice()" class="btn-primary" style="margin-top:15px; padding:10px; font-size:1rem; background:var(--admin-color);">공지사항 발행하기</button>
                 
-                <h4 style="color: var(--admin-color); margin-top: 25px; border-top: 1px dashed #ccc; padding-top: 15px;">등록된 공지사항 목록 (삭제 관리)</h4>
+                <h4 style="color: var(--admin-color); margin-top: 25px; border-top: 1px dashed #ccc; padding-top: 15px;">📜 등록된 공지사항 목록 (삭제 관리)</h4>
                 <div id="admin-notice-list" style="font-size:0.9rem;">공지 목록을 불러오는 중...</div>
             </div>
             
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-calendar-days"></i>실시간 예약 통제 관리</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-calendar-days"></i> 🗓️ 실시간 예약 통제 관리</h3>
                 <div id="admin-total-res-list" style="margin-top: 15px;">전체 예약 내역을 불러오는 중...</div>
             </div>
 
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-users"></i>서비스 가입 회원 명부 관리</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-users"></i> 👥 서비스 가입 회원 명부 관리</h3>
                 <div id="admin-user-list" style="margin-top: 15px;">회원 명부를 불러오는 중...</div>
             </div>
         </div>
@@ -211,7 +211,7 @@
 
         <div id="info-notice" class="section">
             <div class="content-card">
-                <h2>시스템 공지사항</h2>
+                <h2>📢 시스템 공지사항</h2>
                 <div id="user-notice-list">공지사항을 불러오는 중입니다...</div>
                 <button onclick="goHome()" class="btn-primary" style="margin-top:20px;">확인</button>
             </div>
@@ -293,7 +293,7 @@
                 if (existsUser && existsUser.length > 0) return alert("이미 가입된 전화번호입니다.");
                 
                 const { error } = await _supabase.from('member').insert([{ mem_id: id, mem_pw: pw, mem_name: name, is_admin: false }]);
-                if(error) alert("실패"); else { alert("가입 성공 로그인해 주세요."); location.reload(); }
+                if(error) alert("실패"); else { alert("가입 성공! 로그인해 주세요."); location.reload(); }
             
             } else if(currentMode === "find") {
                 if(!id || !name) return alert("아이디(휴대폰 번호)와 가입하신 성함을 입력해 주세요.");
@@ -325,7 +325,7 @@
         }
 
         function loginAdminUI(name) {
-            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
+            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">🛠️ 관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
             loadAdminDashboard();
             showSection('admin-section');
         }
@@ -372,7 +372,7 @@
             }
         }
 
-        // 오전(50명) / 오후(50명)
+        // 🌟 일자별 오전/오후 50명 실시간 인원수 합산 엔진
         async function fetchTimeSlotsForSelection() {
             const courtName = document.getElementById('res-court').value;
             const { data } = await _supabase.from('reservation').select('res_time, status').eq('res_date', selDate).eq('court_name', courtName);
@@ -394,17 +394,18 @@
 
             ["09:00", "15:00"].forEach(time => {
                 let currentPeople = timeSlotsData[time];
+                let remainSeats = 50 - currentPeople;
                 let isAM = (time === "09:00");
-                let labelTitle = isAM ? "오전 타임" : "오후 타임";
+                let labelTitle = isAM ? "🌅 오전 타임" : "🌇 오후 타임";
                 
                 const btn = document.createElement('div');
                 btn.className = 'time-btn';
 
-                if (currentPeople >= 50) {
+                if (remainSeats <= 0) {
                     btn.classList.add('disabled');
-                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:red;">정원 마감 (최대 50명 초과)</small>`;
+                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:red;">❌ 정원 마감 (50명 완료)</small>`;
                 } else {
-                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:var(--primary);">신청 인원 수: ${currentPeople}명 / 50명</small>`;
+                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:var(--primary);">🟢 현재: ${currentPeople}명 (남은 자리: ${remainSeats}석)</small>`;
                     btn.onclick = (e) => {
                         selTime = time;
                         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
@@ -417,13 +418,14 @@
 
         function changeMonth(diff) { currentMonth.setMonth(currentMonth.getMonth() + diff); initCalendar(); }
 
+        // 🛡️ 인원수 정밀 카운팅 + 중복 체크 처리부
         async function reserve() {
             if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
             const memNo = localStorage.getItem('mem_no');
             const people = parseInt(document.getElementById('res-people').value);
             const courtName = document.getElementById('res-court').value;
             
-            // [버그 해결 핵심] 1단계: 로그인한 회원이 같은 구장, 같은 날짜, 같은 시간에 이미 예약을 잡았는지 먼저 대조
+            // 1단계: 동등 시간대 중복 예약 원천 봉쇄
             const { data: duplicateCheck } = await _supabase.from('reservation')
                 .select('res_no')
                 .eq('mem_no', parseInt(memNo))
@@ -432,10 +434,10 @@
                 .eq('court_name', courtName);
 
             if (duplicateCheck && duplicateCheck.length > 0) {
-                return alert(`중복 예약 불가`);
+                return alert(`⚠️ 중복 예약 방지\n이미 해당 날짜/시간[${selDate} ${selTime}]에 예약된 내역이 존재합니다.`);
             }
 
-            // 2단계: 오전/오후 타임 정원 검증 트랜잭션 수행
+            // 2단계: 해당 날짜/타임의 현재 총 인원수(명수) 정밀 재계산
             const { data: currentRes } = await _supabase.from('reservation')
                 .select('status')
                 .eq('res_date', selDate)
@@ -450,16 +452,18 @@
                 });
             }
 
+            let availableSeats = 50 - timeReservedTotal;
+
+            // 신청 명수가 남은 자리를 초과하는지 검증
             if(timeReservedTotal + people > 50) {
-                let targetLabel = (selTime === "09:00") ? "오전" : "오후";
-                return alert(`정원 초과로 예약이 차단되었습니다.\n(현재 ${targetLabel} 예약 완료 인원: ${timeReservedTotal}명 / 신청인원: ${people}명 / 정원 제한: 50명)`);
+                return alert(`⚠️ 정원 초과 (잔여석 부족)\n현재 예약 가능한 자리는 [ ${availableSeats}자리 ] 입니다.\n신청하신 인원(${people}명)이 남은 자리보다 많아 예약할 수 없습니다.`);
             }
 
             const randomCode = generateRandomTicket();
             const finalStatusStr = `예약완료(${people}명) [확인번호: ${randomCode}]`;
 
             const { error } = await _supabase.from('reservation').insert([{ mem_no: parseInt(memNo), res_date: selDate, res_time: selTime, court_name: courtName, status: finalStatusStr }]);
-            if(error) alert("실패"); else { alert(`예약 성공`); fetchRes(); fetchTimeSlotsForSelection(); }
+            if(error) alert("실패"); else { alert(`🎉 예약이 성공적으로 완료되었습니다!\n▶ 예약 인원: ${people}명\n▶ 확인 일련번호: ${randomCode}`); fetchRes(); fetchTimeSlotsForSelection(); }
         }
 
         async function fetchRes() {
@@ -483,7 +487,10 @@
             await _supabase.from('reservation').delete().eq('res_no', resNo); fetchRes(); if(selDate) fetchTimeSlotsForSelection();
         }
 
-      
+        /* ==========================================================================
+           ⚙ 관리자 전용 스크립트 기능 집합 (완벽 보존)
+           ========================================================================== */
+
         function loadAdminDashboard() {
             fetchAdminStats();
             fetchAdminTotalRes();
@@ -555,7 +562,7 @@
                 adminNoticeDiv.innerHTML = data.map(n => `
                     <div class="res-item">
                         <div>
-                            <strong>${n.title}</strong> <small style="color:#aaa;">(${new Date(n.created_at).toLocaleDateString()})</small>
+                            <strong>📌 ${n.title}</strong> <small style="color:#aaa;">(${new Date(n.created_at).toLocaleDateString()})</small>
                         </div>
                         <button class="btn-cancel" style="background:#e65100;" onclick="deleteNotice(${n.notice_no})">공지 삭제</button>
                     </div>`).join('');
@@ -575,7 +582,7 @@
             if(data && data.length > 0) {
                 userNoticeDiv.innerHTML = data.map(n => `
                     <div class="notice-item">
-                        <h4>${n.title}</h4>
+                        <h4>📌 ${n.title}</h4>
                         <p>${n.content.replace(/\n/g, '<br>')}</p>
                         <small style="color:#aaa; font-size:0.75rem;">작성일: ${new Date(n.created_at).toLocaleDateString()}</small>
                     </div>`).join('');
