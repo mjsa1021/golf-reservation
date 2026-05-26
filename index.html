@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산·대구 파크골프 예약 시스템 (최종 완성본)</title>
+    <title>경산·경북 파크골프 예약 시스템</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -40,7 +40,7 @@
         .res-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #eee; }
         .btn-cancel { background: #ff5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* ⚙️ 관리자 전용 스타일 */
+        /* 관리자 전용 스타일 */
         .admin-banner { background: var(--admin-color); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
         .badge-user { background: #e3f2fd; color: #1e88e5; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
         .badge-admin { background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
@@ -97,7 +97,7 @@
                     <div class="privacy-box">
                         [개인정보 수집 및 이용 동의서]<br>
                         1. 수집항목: 성명, 휴대폰 번호(아이디), 비밀번호<br>
-                        2. 수집목적: 경산·대구 파크골프 예약 시스템 회원 확인, 고유 식별 일련번호 발급 및 비번 찾기 권한 검증<br>
+                        2. 수집목적: 경산·경북 파크골프 예약 시스템 회원 확인, 고유 식별 일련번호 발급 및 비번 찾기 권한<br>
                         3. 보유기간: 회원 탈퇴 시 혹은 시스템 종료 시까지 즉시 파기합니다.
                     </div>
                     <div class="privacy-check">
@@ -147,7 +147,7 @@
             </div>
 
             <div class="content-card">
-                <h3>나의 예약 현황 (무작위 검증 일련번호 포함)</h3>
+                <h3>나의 예약 현황</h3>
                 <div id="my-res-list">내역을 불러오는 중...</div>
             </div>
         </div>
@@ -160,32 +160,32 @@
 
             <div class="stats-grid">
                 <div class="stats-card">
-                    <h4>📊 총 서비스 회원수</h4>
+                    <h4>총 서비스 회원수</h4>
                     <p id="stats-total-users">0명</p>
                 </div>
                 <div class="stats-card">
-                    <h4>⛳ 총 등록된 예약수</h4>
+                    <h4>총 등록된 예약수</h4>
                     <p id="stats-total-reservations">0건</p>
                 </div>
             </div>
 
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-bullhorn"></i> 📢 실시간 공지사항 등록</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-bullhorn"></i>실시간 공지사항 등록</h3>
                 <input type="text" id="admin-notice-title" placeholder="공지사항 제목을 입력하세요.">
                 <textarea id="admin-notice-content" rows="3" placeholder="공지사항 상세 내용을 입력하세요." style="margin-top:10px;"></textarea>
                 <button onclick="postNotice()" class="btn-primary" style="margin-top:15px; padding:10px; font-size:1rem; background:var(--admin-color);">공지사항 발행하기</button>
                 
-                <h4 style="color: var(--admin-color); margin-top: 25px; border-top: 1px dashed #ccc; padding-top: 15px;">📜 등록된 공지사항 목록 (삭제 관리)</h4>
+                <h4 style="color: var(--admin-color); margin-top: 25px; border-top: 1px dashed #ccc; padding-top: 15px;">등록된 공지사항 목록 (삭제 관리)</h4>
                 <div id="admin-notice-list" style="font-size:0.9rem;">공지 목록을 불러오는 중...</div>
             </div>
             
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-calendar-days"></i> 🗓️ 실시간 예약 통제 관리</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-calendar-days"></i>실시간 예약 통제</h3>
                 <div id="admin-total-res-list" style="margin-top: 15px;">전체 예약 내역을 불러오는 중...</div>
             </div>
 
             <div class="content-card">
-                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-users"></i> 👥 서비스 가입 회원 명부 관리</h3>
+                <h3 style="color: var(--admin-color); margin-top: 0;"><i class="fa-solid fa-users"></i>서비스 가입 회원 명부</h3>
                 <div id="admin-user-list" style="margin-top: 15px;">회원 명부를 불러오는 중...</div>
             </div>
         </div>
@@ -211,7 +211,7 @@
 
         <div id="info-notice" class="section">
             <div class="content-card">
-                <h2>📢 시스템 공지사항</h2>
+                <h2>시스템 공지사항</h2>
                 <div id="user-notice-list">공지사항을 불러오는 중입니다...</div>
                 <button onclick="goHome()" class="btn-primary" style="margin-top:20px;">확인</button>
             </div>
@@ -325,7 +325,7 @@
         }
 
         function loginAdminUI(name) {
-            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">🛠️ 관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
+            document.getElementById('auth-status').innerHTML = `<span style="color:var(--admin-color); font-weight:bold;">관리자(${name})님</span> | <span onclick="logout()" style="cursor:pointer; color:red; font-weight:bold;">로그아웃</span>`;
             loadAdminDashboard();
             showSection('admin-section');
         }
@@ -395,16 +395,16 @@
                 let currentPeople = timeSlotsData[time];
                 let remainSeats = 50 - currentPeople;
                 let isAM = (time === "09:00");
-                let labelTitle = isAM ? "🌅 오전 타임" : "🌇 오후 타임";
+                let labelTitle = isAM ? "오전 타임" : "오후 타임";
                 
                 const btn = document.createElement('div');
                 btn.className = 'time-btn';
 
                 if (remainSeats <= 0) {
                     btn.classList.add('disabled');
-                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:red;">❌ 정원 마감 (50명 완료)</small>`;
+                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:red;">정원 마감 (50명 완료)</small>`;
                 } else {
-                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:var(--primary);">🟢 현재: ${currentPeople}명 (남은 자리: ${remainSeats}석)</small>`;
+                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:var(--primary);">현재: ${currentPeople}명 (남은 자리: ${remainSeats}석)</small>`;
                     btn.onclick = (e) => {
                         selTime = time;
                         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
@@ -417,7 +417,6 @@
 
         function changeMonth(diff) { currentMonth.setMonth(currentMonth.getMonth() + diff); initCalendar(); }
 
-        // 🛡️ [업그레이드] 다중 대리/중복 예약 완전 허용 및 잔여석 자동 통제 시스템
         async function reserve() {
             if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
             const memNo = localStorage.getItem('mem_no');
@@ -454,7 +453,7 @@
             const finalStatusStr = `예약완료(${people}명) [확인번호: ${randomCode}]`;
 
             const { error } = await _supabase.from('reservation').insert([{ mem_no: parseInt(memNo), res_date: selDate, res_time: selTime, court_name: courtName, status: finalStatusStr }]);
-            if(error) alert("실패"); else { alert(`🎉 예약이 성공적으로 완료되었습니다!\n▶ 예약 인원: ${people}명\n▶ 확인 일련번호: ${randomCode}\n(동일 타임 추가 대리 예약 가능)`); fetchRes(); fetchTimeSlotsForSelection(); }
+            if(error) alert("실패"); else { alert(`예약 성공\n▶ 예약 인원: ${people}명\n▶ 확인 일련번호: ${randomCode}\n(동일 타임 추가 대리 예약 가능)`); fetchRes(); fetchTimeSlotsForSelection(); }
         }
 
         async function fetchRes() {
@@ -477,10 +476,6 @@
             if(!confirm("취소하시겠습니까?")) return;
             await _supabase.from('reservation').delete().eq('res_no', resNo); fetchRes(); if(selDate) fetchTimeSlotsForSelection();
         }
-
-        /* ==========================================================================
-           ⚙ 관리자 전용 스크립트 기능 집합 (완벽 보존)
-           ========================================================================== */
 
         function loadAdminDashboard() {
             fetchAdminStats();
@@ -553,7 +548,7 @@
                 adminNoticeDiv.innerHTML = data.map(n => `
                     <div class="res-item">
                         <div>
-                            <strong>📌 ${n.title}</strong> <small style="color:#aaa;">(${new Date(n.created_at).toLocaleDateString()})</small>
+                            <strong>${n.title}</strong> <small style="color:#aaa;">(${new Date(n.created_at).toLocaleDateString()})</small>
                         </div>
                         <button class="btn-cancel" style="background:#e65100;" onclick="deleteNotice(${n.notice_no})">공지 삭제</button>
                     </div>`).join('');
@@ -573,7 +568,7 @@
             if(data && data.length > 0) {
                 userNoticeDiv.innerHTML = data.map(n => `
                     <div class="notice-item">
-                        <h4>📌 ${n.title}</h4>
+                        <h4>${n.title}</h4>
                         <p>${n.content.replace(/\n/g, '<br>')}</p>
                         <small style="color:#aaa; font-size:0.75rem;">작성일: ${new Date(n.created_at).toLocaleDateString()}</small>
                     </div>`).join('');
