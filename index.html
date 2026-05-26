@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산·경북 파크골프 예약 시스템</title>
+    <title>경산·대구 파크골프 예약 시스템 (최종 완결본)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -40,7 +40,7 @@
         .res-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #eee; }
         .btn-cancel { background: #ff5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* 관리자 전용 스타일 */
+        /* ⚙️ 관리자 전용 스타일 */
         .admin-banner { background: var(--admin-color); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
         .badge-user { background: #e3f2fd; color: #1e88e5; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
         .badge-admin { background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
@@ -132,10 +132,7 @@
                 </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
 
-                <h3 style="margin-top:25px;">3. 시간 선택 (하루 최대 50명 정원제 운영)</h3>
-                <div style="margin-bottom: 10px; font-weight: bold; color: #555;" id="daily-total-display">
-                    날짜를 선택하면 당일 총 예약 인원이 표시됩니다.
-                </div>
+                <h3 style="margin-top:25px;">3. 시간 선택 (오전 50명 / 오후 50명 정원 제한)</h3>
                 <div class="time-slots" id="time-slots"></div>
 
                 <h3 style="margin-top:25px;">4. 인원 선택</h3>
@@ -375,36 +372,39 @@
             }
         }
 
-        // 🌟 하루 최대 50명 제어 엔진 탑재 시간 슬롯 계산기
+        // 🌟 오전(50명) / 오후(50명) 타임별 가용 정원 실시간 추적 엔진
         async function fetchTimeSlotsForSelection() {
             const courtName = document.getElementById('res-court').value;
             const { data } = await _supabase.from('reservation').select('res_time, status').eq('res_date', selDate).eq('court_name', courtName);
             
-            let dailyTotalPeople = 0; // 당일 해당 구장 총 누적 인원
+            let timeSlotsData = { "09:00": 0, "15:00": 0 };
             if(data) {
                 data.forEach(r => {
                     let matched = r.status.match(/예약완료\((\d+)명\)/);
-                    if(matched) dailyTotalPeople += parseInt(matched[1]);
+                    if(matched) {
+                        let peopleCount = parseInt(matched[1]);
+                        let timeKey = r.res_time.substring(0, 5);
+                        if(timeSlotsData[timeKey] !== undefined) timeSlotsData[timeKey] += peopleCount;
+                    }
                 });
             }
-
-            // 상단 안내 텍스트 변경
-            const dailyDisplay = document.getElementById('daily-total-display');
-            dailyDisplay.innerHTML = `📅 선택 구장 당일 총 예약 인원: <span style="color:${dailyTotalPeople >= 50 ? 'red' : 'var(--primary)'}; font-size:1.1rem;">${dailyTotalPeople}명 / 50명</span>`;
 
             const slotsDiv = document.getElementById('time-slots');
             slotsDiv.innerHTML = '';
 
             ["09:00", "15:00"].forEach(time => {
+                let currentPeople = timeSlotsData[time];
+                let isAM = (time === "09:00");
+                let labelTitle = isAM ? "🌅 오전 타임" : "🌇 오후 타임";
+                
                 const btn = document.createElement('div');
                 btn.className = 'time-btn';
 
-                // 하루 누적이 50명이 넘었거나 도달했다면 모든 슬롯 강제 마감
-                if (dailyTotalPeople >= 50) {
+                if (currentPeople >= 50) {
                     btn.classList.add('disabled');
-                    btn.innerHTML = `<span>${time}</span><small style="color:red;">❌ 금일 예약 마감 (일일 정원 50명 초과)</small>`;
+                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:red;">❌ 정원 마감 (최대 50명 초과)</small>`;
                 } else {
-                    btn.innerHTML = `<span>${time}</span><small style="color:var(--primary);">🟢 신청 가능 (남은 정원: ${50 - dailyTotalPeople}명)</small>`;
+                    btn.innerHTML = `<span>${labelTitle} (${time})</span><small style="color:var(--primary);">🟢 신청 현황: ${currentPeople}명 / 50명</small>`;
                     btn.onclick = (e) => {
                         selTime = time;
                         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
@@ -417,33 +417,50 @@
 
         function changeMonth(diff) { currentMonth.setMonth(currentMonth.getMonth() + diff); initCalendar(); }
 
-        // 예약 최종 검증부 고도화 (하루 50명 락다운)
+        // 🛡️ 예약 확정 로직 (중복 예약 전면 차단 및 오전/오후 50명 크로스 체킹)
         async function reserve() {
             if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
             const memNo = localStorage.getItem('mem_no');
             const people = parseInt(document.getElementById('res-people').value);
             const courtName = document.getElementById('res-court').value;
             
-            // 데이터베이스 최종 트랜잭션 수동 검증 (동시성 방지)
-            const { data: currentRes } = await _supabase.from('reservation').select('status').eq('res_date', selDate).eq('court_name', courtName);
-            let currentDailyTotal = 0;
+            // [버그 해결 핵심] 1단계: 로그인한 회원이 같은 구장, 같은 날짜, 같은 시간에 이미 예약을 잡았는지 먼저 대조
+            const { data: duplicateCheck } = await _supabase.from('reservation')
+                .select('res_no')
+                .eq('mem_no', parseInt(memNo))
+                .eq('res_date', selDate)
+                .eq('res_time', selTime)
+                .eq('court_name', courtName);
+
+            if (duplicateCheck && duplicateCheck.length > 0) {
+                return alert(`⚠️ 중복 예약 불가\n고객님은 이미 동일한 날짜와 시간[${selDate} ${selTime}]에 해당 구장 예약 내역이 존재합니다.`);
+            }
+
+            // 2단계: 오전/오후 타임 정원 검증 트랜잭션 수행
+            const { data: currentRes } = await _supabase.from('reservation')
+                .select('status')
+                .eq('res_date', selDate)
+                .eq('res_time', selTime)
+                .eq('court_name', courtName);
+
+            let timeReservedTotal = 0;
             if(currentRes) {
                 currentRes.forEach(r => {
                     let m = r.status.match(/예약완료\((\d+)명\)/);
-                    if(m) currentDailyTotal += parseInt(m[1]);
+                    if(m) timeReservedTotal += parseInt(m[1]);
                 });
             }
 
-            // 하루 50명 조건 위반 체크
-            if(currentDailyTotal + people > 50) {
-                return alert(`죄송합니다. 일일 최대 수용 인원(50명)을 초과하여 예약할 수 없습니다.\n(현재 예약된 인원: ${currentDailyTotal}명 / 신청 인원: ${people}명)`);
+            if(timeReservedTotal + people > 50) {
+                let targetLabel = (selTime === "09:00") ? "오전" : "오후";
+                return alert(`정원 초과로 예약이 차단되었습니다.\n(현재 ${targetLabel} 예약 완료 인원: ${timeReservedTotal}명 / 신청인원: ${people}명 / 정원 제한: 50명)`);
             }
 
             const randomCode = generateRandomTicket();
             const finalStatusStr = `예약완료(${people}명) [확인번호: ${randomCode}]`;
 
             const { error } = await _supabase.from('reservation').insert([{ mem_no: parseInt(memNo), res_date: selDate, res_time: selTime, court_name: courtName, status: finalStatusStr }]);
-            if(error) alert("실패"); else { alert(`🎉 예약이 확정되었습니다!\n▶ 확인 일련번호: ${randomCode}`); fetchRes(); fetchTimeSlotsForSelection(); }
+            if(error) alert("실패"); else { alert(`🎉 예약이 성공적으로 완료되었습니다!\n▶ 중복 검증 및 일련번호 매칭 확인 완료`); fetchRes(); fetchTimeSlotsForSelection(); }
         }
 
         async function fetchRes() {
@@ -455,8 +472,9 @@
                     let codeMatched = r.status.match(/\[확인번호:\s*([^\]]+)\]/);
                     let ticketBadge = codeMatched ? `<span class="badge-ticket"><i class="fa-solid fa-ticket"></i> ${codeMatched[1]}</span>` : '';
                     let cleanStatus = r.status.split(' [')[0];
+                    let displayTimeLabel = (r.res_time.substring(0,5) === "09:00") ? "오전 09:00" : "오후 15:00";
                     
-                    return `<div class="res-item"><div><strong>${r.res_date}</strong> <span style="color:var(--primary)">${r.res_time}</span> ${ticketBadge}<br><small>${r.court_name} / ${cleanStatus}</small></div><button class="btn-cancel" onclick="cancelRes(${r.res_no})">취소</button></div>`
+                    return `<div class="res-item"><div><strong>${r.res_date}</strong> <span style="color:var(--primary)">${displayTimeLabel}</span> ${ticketBadge}<br><small>${r.court_name} / ${cleanStatus}</small></div><button class="btn-cancel" onclick="cancelRes(${r.res_no})">취소</button></div>`
                 }).join('');
             } else listDiv.innerText = "예약 내역이 없습니다.";
         }
