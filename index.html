@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경산·대구 파크골프 예약 시스템 (피드백 최종본)</title>
+    <title>경산·경북 파크골프 예약 시스템</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -40,7 +40,7 @@
         .res-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #eee; }
         .btn-cancel { background: #ff5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* ⚙️ 관리자 전용 스타일 */
+        /* 관리자 전용 스타일 */
         .admin-banner { background: var(--admin-color); border-radius: 20px; padding: 30px; color: white; margin-bottom: 20px; }
         .badge-user { background: #e3f2fd; color: #1e88e5; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
         .badge-admin { background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
@@ -55,7 +55,6 @@
         .notice-item h4 { margin: 0 0 5px 0; color: #333; }
         .notice-item p { margin: 0; color: #666; font-size: 0.9rem; line-height: 1.4; }
 
-        /* 개인정보 동의 박스 스타일 */
         .privacy-box { background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #666; max-height: 100px; overflow-y: auto; margin-top: 10px; text-align: left; }
         .privacy-check { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.9rem; font-weight: bold; }
         .privacy-check input { width: auto; margin: 0; }
@@ -87,7 +86,6 @@
         <div id="auth-section" class="section">
             <div class="content-card">
                 <h2 id="auth-title" style="text-align:center;">로그인</h2>
-                
                 <input type="text" id="user-id" placeholder="휴대폰 번호 (아이디)">
                 <input type="password" id="user-pw" placeholder="비밀번호">
                 
@@ -134,9 +132,11 @@
                 </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
 
-                <h3 style="margin-top:25px;">3. 시간 선택 (인원 확인 및 마감 상태 표시)</h3>
-                <div class="time-slots" id="time-slots">
-                    </div>
+                <h3 style="margin-top:25px;">3. 시간 선택 (하루 최대 50명 정원제 운영)</h3>
+                <div style="margin-bottom: 10px; font-weight: bold; color: #555;" id="daily-total-display">
+                    날짜를 선택하면 당일 총 예약 인원이 표시됩니다.
+                </div>
+                <div class="time-slots" id="time-slots"></div>
 
                 <h3 style="margin-top:25px;">4. 인원 선택</h3>
                 <select id="res-people">
@@ -224,7 +224,7 @@
     <script>
         const _supabase = supabase.createClient('https://cxihknkegqjllaetliui.supabase.co', 'sb_publishable_GPYrYSU37rxlEG0DpKDFgA_oTwChTDK');
         
-        let currentMode = "login"; // "login", "signup", "find"
+        let currentMode = "login"; 
         let selDate = "";
         let selTime = "";
         let currentMonth = new Date();
@@ -250,23 +250,21 @@
             else showSection('main-section');
         }
 
-        // 인증 모드 변환기 개편
         function toggleSignup() {
             currentMode = "signup";
             document.getElementById('auth-title').innerText = "회원가입 (개인정보동의 필수)";
             document.getElementById('user-pw').style.display = "block";
             document.getElementById('auth-extra-fields').style.display = "block";
-            document.getElementById('privacy-container').style.display = "block"; // 동의서 켜기
+            document.getElementById('privacy-container').style.display = "block";
             document.getElementById('btn-auth-main').innerText = "가입 완료";
         }
 
-        // 피드백 2번: 비밀번호 찾기 모드 전환 로직 및 UI 인터페이스 추가
         function switchFindMode() {
             currentMode = "find";
             document.getElementById('auth-title').innerText = "비밀번호 찾기 (본인 확인)";
-            document.getElementById('user-pw').style.display = "none"; // 비밀번호 입력창 숨김
-            document.getElementById('auth-extra-fields').style.display = "block"; // 성함 입력창 노출
-            document.getElementById('privacy-container').style.display = "block"; // 개인정보 처리 고지 활성화
+            document.getElementById('user-pw').style.display = "none";
+            document.getElementById('auth-extra-fields').style.display = "block";
+            document.getElementById('privacy-container').style.display = "block";
             document.getElementById('btn-auth-main').innerText = "내 비밀번호 조회";
         }
 
@@ -274,7 +272,6 @@
             if(selDate) fetchTimeSlotsForSelection();
         }
 
-        // 피드백 3번: 무작위 영문+숫자 난수 일련번호 생성 알고리즘 엔진
         function generateRandomTicket() {
             const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             let result = '';
@@ -282,7 +279,6 @@
             return `P-2026-${result}`;
         }
 
-        // 통합 인증 엔진 처리 단단하게 재구성
         async function handleAuth() {
             const id = document.getElementById('user-id').value.trim();
             const name = document.getElementById('user-name').value.trim();
@@ -303,9 +299,8 @@
                 if(error) alert("실패"); else { alert("가입 성공! 로그인해 주세요."); location.reload(); }
             
             } else if(currentMode === "find") {
-                // 피드백 2번: 이름과 아이디(휴대폰 번호) 매칭 데이터베이스 정밀 조회
                 if(!id || !name) return alert("아이디(휴대폰 번호)와 가입하신 성함을 입력해 주세요.");
-                const { data, error } = await _supabase.from('member').select('mem_pw').eq('mem_id', id).eq('mem_name', name).single();
+                const { data } = await _supabase.from('member').select('mem_pw').eq('mem_id', id).eq('mem_name', name).single();
                 
                 if (data) {
                     alert(`[조회 완료] ${name}님의 비밀번호는 [ ${data.mem_pw} ] 입니다.`);
@@ -314,7 +309,6 @@
                     alert("일치하는 회원 정보가 존재하지 않습니다. 정보를 다시 확인해 주세요.");
                 }
             } else {
-                // 로그인 모드
                 const pw = document.getElementById('user-pw').value;
                 const { data } = await _supabase.from('member').select('*').eq('mem_id', id).eq('mem_pw', pw).single();
                 if(data) {
@@ -374,43 +368,43 @@
                         document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
                         d.classList.add('selected');
                         selDate = `${year}-${String(month + 1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                        fetchTimeSlotsForSelection(); // 날짜 선택 시 실시간 가용성 및 인원 로드
+                        fetchTimeSlotsForSelection(); 
                     };
                 }
                 grid.appendChild(d);
             }
         }
 
-        // 피드백 4번: 특정 날짜/구장의 시간별 예약 인원을 누적 확인하여 화면에 반영하는 핵심 제어 로직
+        // 🌟 하루 최대 50명 제어 엔진 탑재 시간 슬롯 계산기
         async function fetchTimeSlotsForSelection() {
             const courtName = document.getElementById('res-court').value;
             const { data } = await _supabase.from('reservation').select('res_time, status').eq('res_date', selDate).eq('court_name', courtName);
             
-            let timeSlotsData = { "09:00": 0, "15:00": 0 };
+            let dailyTotalPeople = 0; // 당일 해당 구장 총 누적 인원
             if(data) {
                 data.forEach(r => {
                     let matched = r.status.match(/예약완료\((\d+)명\)/);
-                    if(matched) {
-                        let peopleCount = parseInt(matched[1]);
-                        let timeKey = r.res_time.substring(0, 5);
-                        if(timeSlotsData[timeKey] !== undefined) timeSlotsData[timeKey] += peopleCount;
-                    }
+                    if(matched) dailyTotalPeople += parseInt(matched[1]);
                 });
             }
+
+            // 상단 안내 텍스트 변경
+            const dailyDisplay = document.getElementById('daily-total-display');
+            dailyDisplay.innerHTML = `📅 선택 구장 당일 총 예약 인원: <span style="color:${dailyTotalPeople >= 50 ? 'red' : 'var(--primary)'}; font-size:1.1rem;">${dailyTotalPeople}명 / 50명</span>`;
 
             const slotsDiv = document.getElementById('time-slots');
             slotsDiv.innerHTML = '';
 
             ["09:00", "15:00"].forEach(time => {
-                let currentPeople = timeSlotsData[time];
                 const btn = document.createElement('div');
                 btn.className = 'time-btn';
 
-                if (currentPeople >= 4) {
+                // 하루 누적이 50명이 넘었거나 도달했다면 모든 슬롯 강제 마감
+                if (dailyTotalPeople >= 50) {
                     btn.classList.add('disabled');
-                    btn.innerHTML = `<span>${time}</span><small style="color:red;">❌ 예약 마감 (4명 정원 초과)</small>`;
+                    btn.innerHTML = `<span>${time}</span><small style="color:red;">❌ 금일 예약 마감 (일일 정원 50명 초과)</small>`;
                 } else {
-                    btn.innerHTML = `<span>${time}</span><small style="color:var(--primary);">🟢 현재 예약 완료: ${currentPeople}명 (신청 가능)</small>`;
+                    btn.innerHTML = `<span>${time}</span><small style="color:var(--primary);">🟢 신청 가능 (남은 정원: ${50 - dailyTotalPeople}명)</small>`;
                     btn.onclick = (e) => {
                         selTime = time;
                         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
@@ -423,28 +417,28 @@
 
         function changeMonth(diff) { currentMonth.setMonth(currentMonth.getMonth() + diff); initCalendar(); }
 
-        // 예약 처리부 고도화 (일련번호 결합)
+        // 예약 최종 검증부 고도화 (하루 50명 락다운)
         async function reserve() {
             if(!selDate || !selTime) return alert("날짜와 시간을 선택하세요");
             const memNo = localStorage.getItem('mem_no');
             const people = parseInt(document.getElementById('res-people').value);
             const courtName = document.getElementById('res-court').value;
             
-            // 승인 전 마지막 동시성 제어 체크
-            const { data: currentRes } = await _supabase.from('reservation').select('status').eq('res_date', selDate).eq('res_time', selTime).eq('court_name', courtName);
-            let totalReserved = 0;
+            // 데이터베이스 최종 트랜잭션 수동 검증 (동시성 방지)
+            const { data: currentRes } = await _supabase.from('reservation').select('status').eq('res_date', selDate).eq('court_name', courtName);
+            let currentDailyTotal = 0;
             if(currentRes) {
                 currentRes.forEach(r => {
                     let m = r.status.match(/예약완료\((\d+)명\)/);
-                    if(m) totalReserved += parseInt(m[1]);
+                    if(m) currentDailyTotal += parseInt(m[1]);
                 });
             }
 
-            if(totalReserved + people > 4) {
-                return alert(`정원 초과로 예약할 수 없습니다.\n(현재 잔여석: ${4 - totalReserved}명 / 신청인원: ${people}명)`);
+            // 하루 50명 조건 위반 체크
+            if(currentDailyTotal + people > 50) {
+                return alert(`죄송합니다. 일일 최대 수용 인원(50명)을 초과하여 예약할 수 없습니다.\n(현재 예약된 인원: ${currentDailyTotal}명 / 신청 인원: ${people}명)`);
             }
 
-            // 피드백 3번: 무작위 일련번호 생성하여 상태값과 매칭 바인딩
             const randomCode = generateRandomTicket();
             const finalStatusStr = `예약완료(${people}명) [확인번호: ${randomCode}]`;
 
@@ -452,7 +446,6 @@
             if(error) alert("실패"); else { alert(`🎉 예약이 확정되었습니다!\n▶ 확인 일련번호: ${randomCode}`); fetchRes(); fetchTimeSlotsForSelection(); }
         }
 
-        // 피드백 3번: 내 예약 현황 불러올 때 영문+숫자 혼합 일련번호를 배지로 시각화
         async function fetchRes() {
             const memNo = localStorage.getItem('mem_no');
             const { data } = await _supabase.from('reservation').select('*').eq('mem_no', memNo).order('res_date', {ascending: true});
